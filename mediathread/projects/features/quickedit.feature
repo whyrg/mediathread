@@ -35,7 +35,7 @@ Feature: QuickEdit
         And I see "Here are my notes"
         And there is an "ghi" link
 
-        Finished using Selenium
+        Then Finished using Selenium
 
     Scenario: quickedit.feature 2. Instructor creates a selection
         Using selenium

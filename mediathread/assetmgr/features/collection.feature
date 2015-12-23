@@ -1,7 +1,7 @@
 Feature: Collection View
 
     Scenario: collection.feature 1. Collection - Default Item & Selection View As Instructor
-        Using selenium
+        Given using selenium
         Given there are sample assets
         Given I am instructor_one in Sample Course
 
@@ -289,4 +289,3 @@ Feature: Collection View
         And I can filter by "student_two_item (1)" in the Collection column
 
         Finished using Selenium
-

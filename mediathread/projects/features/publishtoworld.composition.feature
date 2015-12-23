@@ -45,7 +45,7 @@ Feature: Public Compositions
             When I click the "<item_name>" citation in the Composition panel
             Then the Composition panel media window displays "<item_name>"
         
-        Finished using Selenium
+        Then Finished using Selenium
 
       Examples:
         | project_name                    | item_name             |

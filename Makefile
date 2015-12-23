@@ -3,15 +3,17 @@ APP=mediathread
 # sherdjs isn't jscs clean yet so for now:
 JS_FILES=media/js/app
 MAX_COMPLEXITY=7
-PY_DIRS=$(APP) lti_auth structuredcollaboration terrain.py
+PY_DIRS=$(APP) features lti_auth structuredcollaboration
 
 all: jenkins
 
 include *.mk
 
 harvest1: $(PY_SENTINAL)
-	$(MANAGE) harvest --settings=$(APP).settings_test --failfast -v 3 -a mediathread.main,mediathread.assetmgr,mediathread.taxonomy,mediathread.discussions
+	$(MANAGE) harvest --settings=$(APP).settings_test --failfast -v 3 $(APP)/main/features
+	$(MANAGE) harvest --settings=$(APP).settings_test --failfast -v 3 $(APP)/assetmgr/features
+	$(MANAGE) harvest --settings=$(APP).settings_test --failfast -v 3 $(APP)/taxonomy/features
+	$(MANAGE) harvest --settings=$(APP).settings_test --failfast -v 3 $(APP)/discussions/features
 
 harvest2: $(PY_SENTINAL)
-	$(MANAGE) harvest --settings=$(APP).settings_test --failfast -v 3 -a mediathread.projects
-
+	$(MANAGE) harvest --settings=$(APP).settings_test --failfast -v 3 $(APP)/projects/features

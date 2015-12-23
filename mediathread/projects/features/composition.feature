@@ -49,7 +49,7 @@ Feature: Composition
         Given the home workspace is loaded
         Then there is a draft "Composition: Scenario 1" project by Instructor One
 
-        Finished using Selenium
+        Then Finished using Selenium
 
     Scenario: composition.feature 2. Student creates composition
         Using selenium

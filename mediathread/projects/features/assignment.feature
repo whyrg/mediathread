@@ -65,7 +65,7 @@ Feature: Assignment
         Finished using Selenium
 
     Scenario: assignment.feature 2. Student creates assignment response
-        Using selenium
+        Given Using selenium
         Given there is a sample assignment
         Given I am student_one in Sample Course
 
@@ -113,7 +113,7 @@ Feature: Assignment
         Finished using Selenium
 
     Scenario: assignment.feature 3. Instructor provides response feedback
-        Using selenium
+        Given Using selenium
         Given there is a sample response
         Given I am instructor_one in Sample Course
 

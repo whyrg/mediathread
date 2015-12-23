@@ -21,7 +21,7 @@ Feature: Single Asset View
         And there is a Create button
 
         # Verify the Quick Help popup is visible
-        Contextual help is visible for the asset
+        When Contextual help is visible for the asset
         When I close the asset's contextual help
         Contextual help is not visible for the asset
 
@@ -139,4 +139,4 @@ Feature: Single Asset View
         And I see "Class References"
         And there is a "Single Asset View 4" link
 
-        Finished using Selenium
+        Then Finished using Selenium

@@ -35,7 +35,7 @@ Feature: Instructor Dashboard
         Given I am instructor_one in Sample Course
 
         When I open the reports menu
-        There is a "Class Activity" link
+        Then There is a "Class Activity" link
         When I click the "Class Activity" link
         Then I see "Report: Class Activity"
 
@@ -87,7 +87,7 @@ Feature: Instructor Dashboard
 
         When I click the "Sample Assignment Response" link
         Then I am at the Sample Assignment Response page
-        There is an open Composition panel
+        Then There is an open Composition panel
         And the Composition title is "Sample Assignment Response"
 
         Finished using Selenium
@@ -101,4 +101,4 @@ Feature: Instructor Dashboard
         When I click the "Class Member Contributions" link
         Then I see "Report: Class Member Contributions"
 
-        Finished using Selenium  
+        Finished using Selenium

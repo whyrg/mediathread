@@ -42,7 +42,7 @@ Feature: Taxonomy
 
         Then there is not a "Colors" concept
 
-        Finished using Selenium
+        Then Finished using Selenium
 
     Scenario: taxonomy.feature 2. Edit Taxonomy
         Using selenium
@@ -73,7 +73,7 @@ Feature: Taxonomy
         Then there is a "Shapes" concept
         Then there is not a "Colors" concept
 
-        Finished using Selenium
+        Then Finished using Selenium
 
     Scenario: taxonomy.feature 3. Create, Duplicate, Delete Term
         Using selenium
@@ -105,7 +105,7 @@ Feature: Taxonomy
         And I confirm the action
         Then there is no "Red" term
 
-        Finished using Selenium
+        Then Finished using Selenium
 
 
     Scenario: taxonomy.feature 4. Edit Term
@@ -137,7 +137,7 @@ Feature: Taxonomy
         Then there is a "Blue" term
         Then there is no "Red" term
 
-        Finished using Selenium
+        Then Finished using Selenium
 
     Scenario: taxonomy.feature 5. Create Term, Edit Taxonomy
         Using selenium
@@ -217,7 +217,7 @@ Feature: Taxonomy
         Then I click the Refresh button
         Then there is a "Red" term
 
-        Finished using Selenium
+        Then Finished using Selenium
 
     Scenario: taxonomy.feature 7. Try invalid Onomy url
         Using selenium
@@ -245,7 +245,7 @@ Feature: Taxonomy
         Then there is no "Purple" term
         Then there is no "Red" term
 
-        Finished using Selenium
+        Then Finished using Selenium
 
     Scenario: taxonomy.feature 8. Refresh
         Using selenium
@@ -300,4 +300,4 @@ Feature: Taxonomy
         When I click the "Neons" concept
         Then there is a "Laser Blue" term
         
-        Finished using Selenium
+        Then Finished using Selenium

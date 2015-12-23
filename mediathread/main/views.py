@@ -1150,7 +1150,7 @@ class LTICourseCreate(LoggedInMixin, View):
 class ClearTestCache(View):
     def get(self, request, *args, **kwargs):
         # for selenium test use only
-        if hasattr(settings, 'LETTUCE_DJANGO_APP'):
+        if hasattr(settings, 'ALOE_DJANGO_APP'):
             cache.clear()
             ContentType.objects.clear_cache()
 

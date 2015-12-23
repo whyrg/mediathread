@@ -19,8 +19,6 @@ BROWSER = 'Headless'
 # BROWSER = 'Firefox'
 # BROWSER = 'Chrome'
 
-LETTUCE_SERVER_PORT = 8002
-
 LETTUCE_APPS = (
     'mediathread.assetmgr',
     'mediathread.discussions',
@@ -29,8 +27,8 @@ LETTUCE_APPS = (
     'mediathread.taxonomy'
 )
 
-LETTUCE_DJANGO_APP = ['lettuce.django']
-INSTALLED_APPS = INSTALLED_APPS + LETTUCE_DJANGO_APP
+ALOE_DJANGO_APP = ['aloe_django']
+INSTALLED_APPS = INSTALLED_APPS + ALOE_DJANGO_APP
 
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',

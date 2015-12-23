@@ -29,7 +29,7 @@ Feature: Sliding Panels
         | 1440  | 900    | open           |
 
     Scenario Outline: 2. Assignment At Various Resolutions
-        Using selenium
+        Given Using selenium
         Given there is a sample assignment
         Given I am student_one in Sample Course
         Given my browser resolution is <width> x <height>

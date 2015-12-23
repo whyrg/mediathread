@@ -1,10 +1,5 @@
-from lettuce import world, step
-from selenium.webdriver.support.expected_conditions import \
-    visibility_of_element_located, invisibility_of_element_located, \
-    presence_of_element_located
-import selenium.webdriver.support.ui as ui
-from selenium.webdriver.common.by import By
-from selenium.common.exceptions import NoSuchElementException
+from aloe import world, step
+import time
 
 
 @step(u'The item header is "([^"]*)"')

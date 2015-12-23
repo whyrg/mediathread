@@ -48,7 +48,7 @@ class GroupFactory(factory.DjangoModelFactory):
     class Meta:
         model = Group
     name = factory.Sequence(
-        lambda n: 't1.y2010.s001.cf1000.scnc.st.course:%d.columbia.edu' % n)
+        lambda n: 't1.y2010.s001.cf1000.scnc.st.course:%s.columbia.edu' % n)
 
 
 class RegistrationProfileFactory(factory.DjangoModelFactory):

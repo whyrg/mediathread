@@ -1,9 +1,8 @@
 Feature: Sliding Panels in the Asset View
 
     Scenario Outline: 1. Full Collection at various resolutions
-        Using selenium
-        Given there are sample assets
-        Given I am instructor_one in Sample Course
+        Given Using selenium
+        Given I am test_instructor in Sample Course
         Given my browser resolution is <width> x <height>
 
         # Full Collection
@@ -30,9 +29,8 @@ Feature: Sliding Panels in the Asset View
         | 1440  | 900    |
 
     Scenario Outline: 2. Individual Item View
-        Using selenium
-        Given there are sample assets
-        Given I am instructor_one in Sample Course
+        Given Using selenium
+        Given I am test_instructor in Sample Course
         Given my browser resolution is <width> x <height>
 
         # View an individual asset

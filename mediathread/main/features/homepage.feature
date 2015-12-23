@@ -49,7 +49,7 @@ Feature: Homepage
         Finished using Selenium
 
     Scenario: homepage.feature 3. Student view w/assignment
-        Using selenium
+        Given Using selenium
         Given there is a sample assignment
         Given I am student_one in Sample Course
 
@@ -69,7 +69,7 @@ Feature: Homepage
         Finished using Selenium
 
     Scenario: homepage.feature 4. Student view w/assignment & response
-        Using selenium
+        Given Using selenium
         Given there is a sample response
         Given I am student_one in Sample Course
 
@@ -111,6 +111,8 @@ Feature: Homepage
         There is not an "Admin" link
 
         When I click the "Log Out" link
-        Then I am at the Login page 
+        Then I am at the Login page
+
+        Then Finished using Selenium
 
         Finished using Selenium
