@@ -34,6 +34,13 @@ CACHES = {
         'TIMEOUT': 3600  # One Hour
     }
 }
+if 'test' in sys.argv or 'jenkins' in sys.argv:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            'LOCATION': 'mediathread',
+        }
+    }
 
 TEMPLATE_CONTEXT_PROCESSORS += [  # noqa
     'django.contrib.messages.context_processors.messages',

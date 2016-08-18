@@ -188,13 +188,14 @@ class Asset(models.Model):
     @property
     def thumb_url(self):
         key = "%s:thumb" % (self.id)
-        if key not in cache:
+        url = cache.get(key)
+        if url is None:
             try:
                 url = self.source_set.get(label='thumb').url
             except Source.DoesNotExist:
                 url = None
             cache.set(key, url)
-        return cache.get(key)
+        return url
 
     def tags(self):
         # returns all tags for this instance's notes
