@@ -4,7 +4,10 @@ addons:
   firefox: "45.3.0esr"
 env:
   - TEST_SUITE=jenkins
-  - TEST_SUITE=harvest
+  - TEST_SUITE=harvest1
+  - TEST_SUITE=harvest2
+  - TEST_SUITE=harvest3
+  - TEST_SUITE=harvest4
 python:
   - "2.7"
 script:
