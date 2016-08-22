@@ -281,7 +281,7 @@ def there_is_not_a_text_link(step, text):
                     world.dom = html.fromstring(response.content)
                     assert False, "found the '%s' link" % text
     else:
-        wait = ui.WebDriverWait(world.browser, 5)
+        wait = ui.WebDriverWait(world.browser, 10)
         wait.until(invisibility_of_element_located((By.PARTIAL_LINK_TEXT,
                                                     text)))
 
