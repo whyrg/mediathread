@@ -2,7 +2,7 @@
 from settings_shared import *
 
 DEBUG = False
-TEMPLATE_DEBUG = False
+TEMPLATE_DEBUG = DEBUG
 
 DATABASES = {
     'default': {
@@ -43,3 +43,7 @@ MIDDLEWARE_CLASSES.remove(
     'debug_toolbar.middleware.DebugToolbarMiddleware')
 MIDDLEWARE_CLASSES.remove(
     'impersonate.middleware.ImpersonateMiddleware')
+MIDDLEWARE_CLASSES.remove(
+    'waffle.middleware.WaffleMiddleware')
+
+INSTALLED_APPS.remove('debug_toolbar')
