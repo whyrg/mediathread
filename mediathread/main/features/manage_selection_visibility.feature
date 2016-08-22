@@ -9,23 +9,22 @@ Feature: Manage Selection Visibility
         Then there is a "Settings" link
         When I click the "Settings" link
         Then I am at the Course Settings page
-     
+
         The selection visibility is "Yes"
-        
+
         Finished using Selenium
-        
+
     Scenario: manage_selection_visibility.feature 2. Change selection visibility to no
         Using selenium
         Given I am instructor_one in Sample Course
         Given the selection visibility is set to "No"
-        
+
         When I open the manage menu
         Then there is a "Settings" link
         When I click the "Settings" link
         Then I am at the Course Settings page
-     
+
         The selection visibility is "No"
-        
-        Finished using Selenium        
-    
-  
+
+        Finished using Selenium
+
