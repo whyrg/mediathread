@@ -299,7 +299,7 @@ def there_is_a_text_link(step, text):
         assert False, "could not find the '%s' link" % text
     else:
         wait = ui.WebDriverWait(world.browser, 10)
-        wait.until(visibility_of_element_located((By.PARTIAL_LINK_TEXT, text)))
+        wait.until(presence_of_element_located((By.PARTIAL_LINK_TEXT, text)))
 
 
 @step(u'I click the "([^"]*)" link')
