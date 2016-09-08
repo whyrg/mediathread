@@ -469,10 +469,9 @@ class Project(models.Model):
         if (collaboration is None) or \
            (not collaboration.permission_to('read', course, viewer)):
             return False
-
         # If this project is an assignment response, verify the parent
         # assignment's response policy sanctions a read by the viewer
-        if not self.is_composition():
+        if course is None or not self.is_composition():
             return True  # this project is an assignment
 
         parent = collaboration.get_parent()
