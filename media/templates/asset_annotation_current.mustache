@@ -50,8 +50,11 @@
         </div>
         <div id="annotation-body">
           {{#annotation}}
-            <label for="annotation-title">Title</label>
-            <div><input type="text" id="id_annotation-title" name="annotation-title" value="{{metadata.title}}"/></div>
+            <div>
+                <label for="annotation-title">Title</label>
+                <input type="text" id="id_annotation-title" name="annotation-title"
+                    value="{{metadata.title}}"/>
+            </div>
           {{/annotation}}
 
           {{#vocabulary.length}}
@@ -74,8 +77,8 @@
           {{/vocabulary.length}}
           <br />
           {{#annotation}}
-            <label for="annotation-tags">Tags</label>
             <div>
+              <label for="annotation-tags">Tags</label>
               <input type="text" id="id_annotation-tags"
               class="annotation-tags"
               name="annotation-tags"

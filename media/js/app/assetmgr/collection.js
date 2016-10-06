@@ -13,8 +13,6 @@
  * Signals:
  * asset.edit > when edit in place is clicked
  * asset.on_delete > after ajaxDelete is called
- * annotation.create > when create selection is clicked
- * annotation.edit > when edit in place is clicked
  */
 
 var CollectionList = function(config) {
@@ -32,6 +30,7 @@ var CollectionList = function(config) {
     self.limits = {offset: 0, limit: 20};
     self.loading = false;
     self.current_asset = config.current_asset;
+    self.vocabulary = config.vocabulary;
 
     self.$el = self.$parent.find('div.' + self.template_label);
 
@@ -45,8 +44,15 @@ var CollectionList = function(config) {
             event.data.self.refresh();
         }
     });
+    jQuery(window).on('annotation.on_cancel', {'self': self}, function(event) {
+        var self = event.data.self;
+        self.$quickEdit.fadeOut();
+        self.$el.find('.media-column').fadeIn();
+    });
     jQuery(window).on('annotation.on_create', {'self': self}, function(event) {
         var self = event.data.self;
+        self.$quickEdit.fadeOut();
+        self.$el.find('.media-column').fadeIn();
         self.scrollTop =
             self.$el.find('div.collection-assets').scrollTop();
         event.data.self.refresh();
@@ -61,6 +67,8 @@ var CollectionList = function(config) {
     });
     jQuery(window).on('annotation.on_save', {'self': self}, function(event) {
         var self = event.data.self;
+        self.$quickEdit.fadeOut();
+        self.$el.find('.media-column').fadeIn();
         self.scrollTop =
             self.$el.find('div.collection-assets').scrollTop();
         event.data.self.refresh();
@@ -151,8 +159,8 @@ var CollectionList = function(config) {
         'click', 'a.collection-choice.edit-asset', function(evt) {
             var src = evt.srcElement || evt.target || evt.originalTarget;
             var bits = src.parentNode.href.split('/');
-            var asset_id = bits[bits.length - 1];
-            jQuery(window).trigger('asset.edit', [asset_id]);
+            var assetId = bits[bits.length - 1];
+            self.quickEdit('Edit Item', 'asset.edit', assetId);
             return false;
         });
 
@@ -176,23 +184,22 @@ var CollectionList = function(config) {
         'click', 'a.collection-choice.create-annotation', function(evt) {
             var src = evt.srcElement || evt.target || evt.originalTarget;
             var bits = src.parentNode.href.split('/');
-            var asset_id = bits[bits.length - 1];
-            jQuery(window).trigger('annotation.create', [asset_id]);
+            var assetId = bits[bits.length - 1];
+            self.quickEdit('Create Selection', 'annotation.create', assetId);
             return false;
         });
 
-    self.$el.on(
-        'click', 'a.collection-choice.edit-annotation', function(evt) {
-            var src = evt.srcElement || evt.target || evt.originalTarget;
-            var bits = src.parentNode.href.split('/');
-            var annotation_id = bits[bits.length - 1];
-            var asset_id = jQuery('#annotation-' + annotation_id)
-                               .parents('div.record')
-                               .children('input.record').attr('value');
-            jQuery(window).trigger('annotation.edit',
-                                   [asset_id, annotation_id]);
-            return false;
-        });
+    self.$el.on('click', 'a.collection-choice.edit-annotation', function(evt) {
+        var src = evt.srcElement || evt.target || evt.originalTarget;
+        var bits = src.parentNode.href.split('/');
+        var annotationId = bits[bits.length - 1];
+        var assetId = jQuery('#annotation-' + annotationId)
+                           .parents('div.record')
+                           .children('input.record').attr('value');
+        self.quickEdit(
+            'Edit Selection', 'annotation.edit', assetId, annotationId);
+        return false;
+    });
 
     var q = '#collection-overlay, #collection-help, #collection-help-tab';
     self.$parent.on('click', '#collection-help-button', function() {
@@ -710,4 +717,47 @@ CollectionList.prototype.appendAssets = function(the_records) {
 
         jQuery(window).trigger('assets.refresh', [html]);
     }
+};
+
+CollectionList.prototype.initCitationView = function() {
+    var self = this;
+    if (!self.hasOwnProperty('citationView')) {
+        self.$quickEdit = jQuery('#asset-workspace-panel-container').first();
+
+        // Setup the media display window.
+        self.citationView = new CitationView();
+        self.citationView.init({
+            'default_target': 'asset-workspace-videoclipbox',
+            'presentation': 'medium',
+            'clipform': true,
+            'autoplay': false,
+            'winHeight': function() {
+                return 250;
+            }
+        });
+    }
+};
+
+CollectionList.prototype.quickEdit = function(title, evtType, assetId, annotationId) {
+    var self = this;
+    self.initCitationView();
+
+    self.$quickEdit.find('.asset-view-title').html(title);
+
+    // Setup the edit view
+    window.annotationList.init({
+        'asset_id': assetId,
+        'annotation_id': annotationId,
+        'edit_state': evtType,
+        'update_history': false,
+        'vocabulary': self.vocabulary,
+        'view_callback': function() {
+            self.$parent.find('.media-column').fadeOut();
+            if (assetId !== self.citationView.asset_id ||
+                    annotationId !== self.citationView.annotation_id) {
+                self.citationView.openCitationById(
+                    null, assetId, annotationId);
+            }
+        }
+    });
 };

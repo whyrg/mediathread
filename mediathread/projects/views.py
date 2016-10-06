@@ -481,16 +481,6 @@ class DefaultProjectView(LoggedInCourseMixin, ProjectReadableMixin,
                                                           feedback_discussion)}
                 panels.append(panel)
 
-            # Create a place for asset editing
-            panel = {'panel_state': 'closed',
-                     'panel_state_label': "Item Details",
-                     'template': 'asset_quick_edit',
-                     'update_history': False,
-                     'owners': owners,
-                     'vocabulary': vocabulary,
-                     'context': {'type': 'asset'}}
-            panels.append(panel)
-
             return self.render_to_json_response(data)
 
 

@@ -48,10 +48,10 @@
             <div id="clipform-display"></div>
           </div>
           <div id="annotation-body">
-            <label for="annotation-title">Title:</label>
             <div>
-              <input data-label="Title" type="text" id="id_annotation-title"
-              name="annotation-title" value="{{annotation.metadata.title}}"/>
+                <label for="annotation-title">Title</label>
+                <input data-label="Title" type="text" id="id_annotation-title"
+                    name="annotation-title" value="{{annotation.metadata.title}}"/>
             </div>
 
           {{#vocabulary.length}}
@@ -60,7 +60,7 @@
               <select class="vocabulary"
                 data-placeholder="select {{display_name?lower()}}"
                 name="vocabulary" multiple="multiple">
-                
+
                 {{#vocabulary}}
                     <optgroup data-id="vocabulary-{{id}}" label="{{display_name}}">
                     {{#term_set}}
@@ -73,8 +73,9 @@
           {{/vocabulary.length}}
           <br />
             {{#annotation}}
-              <label for="annotation-tags">Tags</label>
-              <div><input data-label="Selection Tags" type="text" id="id_annotation-tags"
+              <div>
+                <label for="annotation-tags">Tags</label>
+                <input data-label="Selection Tags" type="text" id="id_annotation-tags"
                 name="annotation-tags" data-placeholder="select or create tags"
                 value="{{#metadata.tags}}{{name}}{{^last}}, {{/last}}{{/metadata.tags}}"/></div>
                   <div class="helptext">Use commas to separate tags. Example: tag 1, tag 2, tag 3</div>

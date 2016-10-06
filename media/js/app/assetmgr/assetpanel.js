@@ -120,66 +120,6 @@ var AssetPanelHandler = function(el, $parent, panel, space_owner) {
     jQuery(window).trigger('resize');
 };
 
-AssetPanelHandler.prototype.closeDialog = function(event) {
-    var self = event.data.self;
-
-    if (self.dialogWindow) {
-        jQuery(self.dialogWindow).dialog('close');
-    }
-};
-
-AssetPanelHandler.prototype.dialog = function(event, assetId, annotationId) {
-    var self = event.data.self;
-
-    var title = 'Edit Item';
-    if (event.type === 'annotation') {
-        if (event.namespace === 'create') {
-            title = 'Create Selection';
-        } else {
-            title = 'Edit Selection';
-        }
-    }
-
-    var $dlg = jQuery('#asset-workspace-panel-container');
-    var elt = $dlg.find('div.asset-view-tabs').hide();
-
-    self.dialogWindow = $dlg.dialog({
-        open: function() {
-            self.dialogWindow = true;
-
-            // Setup the edit view
-            window.annotationList.init({
-                'asset_id': assetId,
-                'annotation_id': annotationId,
-                'edit_state': event.type + '.' + event.namespace,
-                'update_history': false,
-                'vocabulary': self.panel.vocabulary,
-                'view_callback': function() {
-                    if (assetId !== self.citationView.asset_id ||
-                            annotationId !== self.citationView.annotation_id) {
-                        self.citationView.openCitationById(
-                            null, assetId, annotationId);
-                    }
-                    jQuery(elt).fadeIn('slow');
-                }
-            });
-        },
-        close: function() {
-            self.dialogWindow = null;
-        },
-        title: title,
-        draggable: true,
-        resizable: true,
-        modal: true,
-        width: 825,
-        height: 600,
-        position: 'top',
-        zIndex: 10000
-    });
-
-    return false;
-};
-
 AssetPanelHandler.prototype.showAssetContainer = function() {
     var self = this;
 

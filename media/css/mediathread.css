@@ -1287,7 +1287,7 @@ div.mediathread-panel.asset-workspace-dialog div.asset-view-title {
 div.mediathread-panel.asset-workspace-dialog div.asset-view-published {
     border: 0;
     width: 500px !important;
-    height: 450px;    
+    height: 450px;
     margin-left: 0;
 }
 
@@ -1297,10 +1297,23 @@ div.mediathread-panel.asset-workspace-dialog div.asset-view-tabs {
     width: 285px;
 }
 
+#asset-workspace-panel-container {
+    padding: 10px;
+}
+
+.asset-quick-edit .asset-view-tabs {
+    width: 100% !important;
+    margin-top: 10px;
+}
+
+.asset-quick-edit h2 {
+   display: none;
+}
+
 form#edit-global-annotation-form input[name="asset-title"],
 #id_annotation-title {
     height: 24px;
-    width: 98%;
+    width: 90%;
     margin-bottom: 10px;
 }
 
@@ -3138,7 +3151,7 @@ table.selection-level-info td.selection-meta-title {
 
 
 table.selection-level-info td.selection-trash {
-    width: 50px;
+    width: 70px;
     padding: 5px 14px 0 5px!important;
 }
 

@@ -162,6 +162,7 @@ ProjectPanelHandler.prototype.onTinyMCEInitialize = function(instance) {
             'space_owner': self.space_owner,
             'owners': self.panel.owners,
             'citable': true,
+            'vocabulary': self.panel.vocabulary,
             'view_callback': function() {
                 var assets = self.collectionList.getAssets();
                 self.tinymce.plugins.citation.decorateCitationAdders(assets);

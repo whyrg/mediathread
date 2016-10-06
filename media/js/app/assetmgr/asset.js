@@ -4,6 +4,18 @@
 /* global updateUserSetting: true, console: true */
 // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
+/** Listens For
+ * 
+ * Signals
+ * annotation-list.init
+ * asset.on_delete
+ * annotation.on_cancel
+ * annotation.on_create
+ * annotation.on_save
+ * annotation.on_delete
+ **/
+
+
 (function() {
     var AnnotationList = function() {
         var self = this;

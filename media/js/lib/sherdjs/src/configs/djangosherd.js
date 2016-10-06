@@ -248,7 +248,7 @@ function DjangoSherd_Asset_Config() {
 var CitationView = function () {
     var self = this;
     self.citation_link = 'a.materialCitation';
-    self.options = {  autoplay: true, presentation: 'small', targets: {} };
+    self.options = {autoplay: true, presentation: 'small', targets: {}};
 };
 
 CitationView.prototype.init = function (options) {
