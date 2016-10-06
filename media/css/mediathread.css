@@ -1307,7 +1307,7 @@ div.mediathread-panel.asset-workspace-dialog div.asset-view-tabs {
 }
 
 .asset-quick-edit h2 {
-   display: none;
+
 }
 
 form#edit-global-annotation-form input[name="asset-title"],
@@ -4418,4 +4418,11 @@ ul.section-tabs>li>a.active {
     font-size: 1.5em;
     margin: 10px;
     float: right;
+}
+
+i.mce-i-mcollection {
+    background: transparent url(../img/viewfullcollection.png) no-repeat;
+    width: 12px;
+    height: 12px;
+    margin-top: 2px;
 }

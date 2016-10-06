@@ -46,12 +46,12 @@ var CollectionList = function(config) {
     });
     jQuery(window).on('annotation.on_cancel', {'self': self}, function(event) {
         var self = event.data.self;
-        self.$quickEdit.fadeOut();
+        self.$quickEditView.fadeOut();
         self.$el.find('.media-column').fadeIn();
     });
     jQuery(window).on('annotation.on_create', {'self': self}, function(event) {
         var self = event.data.self;
-        self.$quickEdit.fadeOut();
+        self.$quickEditView.fadeOut();
         self.$el.find('.media-column').fadeIn();
         self.scrollTop =
             self.$el.find('div.collection-assets').scrollTop();
@@ -67,7 +67,7 @@ var CollectionList = function(config) {
     });
     jQuery(window).on('annotation.on_save', {'self': self}, function(event) {
         var self = event.data.self;
-        self.$quickEdit.fadeOut();
+        self.$quickEditView.fadeOut();
         self.$el.find('.media-column').fadeIn();
         self.scrollTop =
             self.$el.find('div.collection-assets').scrollTop();
@@ -124,7 +124,7 @@ var CollectionList = function(config) {
         });
 
     self.$el.on(
-        'change', 'select.vocabulary', function(evt) {
+        'change', '.switcher-tool select.vocabulary', function(evt) {
             var option = evt.added || evt.removed;
             var vocab = jQuery(option.element).parent().attr('data-id');
             if (!self.current_records.active_filters.hasOwnProperty(vocab)) {
@@ -142,7 +142,7 @@ var CollectionList = function(config) {
         });
 
     self.$el.on(
-        'change', 'select.course-tags', function() {
+        'change', '.switcher-tool select.course-tags', function() {
             var $elt = self.$el.find('select.course-tags');
             self.current_records.active_filters.tag = $elt.val();
             return self.filter();
@@ -719,10 +719,11 @@ CollectionList.prototype.appendAssets = function(the_records) {
     }
 };
 
-CollectionList.prototype.initCitationView = function() {
+CollectionList.prototype.initQuickEditView = function() {
     var self = this;
     if (!self.hasOwnProperty('citationView')) {
-        self.$quickEdit = jQuery('#asset-workspace-panel-container').first();
+        self.$quickEditView =
+            jQuery('#asset-workspace-panel-container').first();
 
         // Setup the media display window.
         self.citationView = new CitationView();
@@ -738,11 +739,12 @@ CollectionList.prototype.initCitationView = function() {
     }
 };
 
-CollectionList.prototype.quickEdit = function(title, evtType, assetId, annotationId) {
+CollectionList.prototype.quickEdit = function(title, evtType,
+                                              assetId, annotationId) {
     var self = this;
-    self.initCitationView();
+    self.initQuickEditView();
 
-    self.$quickEdit.find('.asset-view-title').html(title);
+    self.$quickEditView.find('.asset-view-title').html(title);
 
     // Setup the edit view
     window.annotationList.init({

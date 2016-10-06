@@ -118,6 +118,7 @@ ProjectPanelHandler.prototype.initAfterTemplateLoad = function(
     self.citationView.decorateLinks(self.essaySpace.id);
 
     if (panel.context.can_edit) {
+        tinymceSettings.toolbar += ', spacer, mybutton';
         var settings = jQuery.extend(tinymceSettings, {
             init_instance_callback: function(editor) {
                 self.onTinyMCEInitialize(editor);
@@ -125,6 +126,14 @@ ProjectPanelHandler.prototype.initAfterTemplateLoad = function(
             setup: function(ed) {
                 ed.on('change', function(e) {
                     self.setDirty(true);
+                });
+
+                ed.addButton('mcollection', {
+                    text: 'Collection',
+                    icon: 'mcollection',
+                    onclick: function () {
+                      alert('onclick');
+                    }
                 });
             },
             selector: '#' + panel.context.project.id + '-project-content'
@@ -134,6 +143,10 @@ ProjectPanelHandler.prototype.initAfterTemplateLoad = function(
 
     self.render();
     self.updateRevisions();
+
+    jQuery(window).on('collection.show', {'self': self}, function(event) {
+        self.collectionList.show();
+    });
 };
 
 ProjectPanelHandler.prototype.onTinyMCEInitialize = function(instance) {
