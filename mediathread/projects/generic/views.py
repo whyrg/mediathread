@@ -72,7 +72,8 @@ class AssignmentView(LoggedInCourseMixin, ProjectReadableMixin, TemplateView):
             'vocabulary': json.dumps(vocabulary_json),
             'responses': responses,
             'feedback': json.dumps(feedback),
-            'feedback_count': feedback_count
+            'feedback_count': feedback_count,
+            'is_submitted': my_response and my_response.is_submitted()
         }
         ctx.update(self.get_extra_context())
         return ctx

@@ -48,7 +48,7 @@
             assignmentId: '{{assignment.id}}',
             responseId: '{{my_response.id}}',
             vocabulary: JSON.parse('{{vocabulary|escapejs}}'),
-            submitted: {% if my_response and my_response.is_submitted %}true{% else %}false{% endif %},
+            submitted: {% if submitted %}true{% else %}false{% endif %},
             feedback: JSON.parse('{{feedback|escapejs}}'),
             feedbackCount: {{feedback_count}}
         });
@@ -58,7 +58,7 @@
 {% endblock %}
 
 {% block content %}
-{% with submitted=my_response.is_submitted %}
+
 <div class="sequence-assignment">
     <div style="width: 970px; background-color: red; height: 2px"></div>
     <h2>
@@ -153,7 +153,7 @@
                     </div>
                 </div>
             {% else %}{% if not assignment_can_edit  %}
-                {% if my_response.is_submitted %}
+                {% if is_submitted %}
                     <div class="right">
                         <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                         <strong>
@@ -270,7 +270,7 @@
         {% else %}{% if my_response %}
             <span class="metadata-label"><b>Publication status</b>:</span>
             <span class="metadata-value">
-                {% if my_response.is_submitted %}
+                {% if is_submitted %}
                     Response submitted
                 {% else %}
                     Response not submitted
@@ -313,5 +313,5 @@
         </div>
     </div>
 </div>
-{% endwith %}
+
 {% endblock %}
