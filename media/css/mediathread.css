@@ -4268,6 +4268,10 @@ a.btn.btn-default img.left {
     margin-top: 0;
 }
 
+.sequence-assignment #id_response_view_policy {
+    list-style-type: none;
+}
+
 .sequence-assignment #id_publish,
 .selection-assignment #id_response_view_policy,
 .selection-assignment #id_publish {
