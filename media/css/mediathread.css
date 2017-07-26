@@ -4724,3 +4724,9 @@ ul.section-tabs>li>a.active {
 #sequence.submitted .jux-playhead-line {
     height: 10px;
 }
+
+/* LTI asset collection and embed view */
+.lti-embed-view #mediathread_logo img {
+		height: 45px;
+		width: 145px;
+}
