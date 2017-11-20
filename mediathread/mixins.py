@@ -162,6 +162,9 @@ class CSVResponseMixin():
 
         for row in rows:
             try:
+                for i in range(0, len(row)):
+                    if isinstance(row[i], basestring):
+                        row[i] = row[i].encode('utf-8')
                 writer.writerow(row)
             except csv.Error:
                 pass

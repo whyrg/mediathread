@@ -3,7 +3,7 @@ import json
 import re
 
 from courseaffils.lib import users_in_course
-from courseaffils.models import Course
+from courseaffils.models import Course, CourseInfo
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.db.models.aggregates import Count
@@ -236,10 +236,14 @@ class ActivityByCourseView(LoggedInSuperuserMixin, CSVResponseMixin, View):
             return 0
 
     def include_course(self, the_course):
-        return (the_course.faculty_group is not None and
-                (the_course.faculty_group.name.startswith('t1') or
-                 the_course.faculty_group.name.startswith('t2') or
-                 the_course.faculty_group.name.startswith('t3')))
+        try:
+            return (the_course.faculty_group is not None and
+                    the_course.info.term is not None)
+        except CourseInfo.DoesNotExist:
+            return (the_course.faculty_group is not None and
+                    (the_course.faculty_group.name.startswith('t1') or
+                     the_course.faculty_group.name.startswith('t2') or
+                     the_course.faculty_group.name.startswith('t3')))
 
     def discussion_count(self, the_course):
         try:
@@ -255,7 +259,7 @@ class ActivityByCourseView(LoggedInSuperuserMixin, CSVResponseMixin, View):
 
         projects = Project.objects.filter(course=the_course)
         for project in projects:
-            if project.visibility_short() == 'Assignment':
+            if project.is_assignment_type():
                 assignments += 1
             else:
                 compositions += 1
@@ -292,11 +296,18 @@ class ActivityByCourseView(LoggedInSuperuserMixin, CSVResponseMixin, View):
             row.append(course_string)
 
             bits = the_course.faculty_group.name.split('.')
-            row.append(bits[0])  # term
-            row.append(bits[1][1:])  # year
-            row.append(bits[2])  # section
-            row.append(bits[3])  # courseNo
-            row.append(bits[4])  # school
+            if len(bits) >= 5:
+                row.append(bits[0])  # term
+                row.append(bits[1][1:])  # year
+                row.append(bits[2])  # section
+                row.append(bits[3])  # courseNo
+                row.append(bits[4])  # school
+            else:
+                row.append(the_course.info.term)  # term
+                row.append(the_course.info.year)  # year
+                row.append('')  # section
+                row.append('')  # courseNo
+                row.append('')  # school
 
             students = self.all_students(the_course)
             row.append(len(students))
