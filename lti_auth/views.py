@@ -34,8 +34,10 @@ class LTIAuthMixin(object):
         # validate the user via oauth
         user = authenticate(request=request, lti=lti)
         if user is None:
+            params = lti.lti_params.copy()
             lti.clear_session(request)
-            return render(request, 'lti_auth/fail_auth.html', {})
+            return render(request, 'lti_auth/fail_auth.html',
+                          {'params': params})
 
         # login
         login(request, user)
