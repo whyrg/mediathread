@@ -1,4 +1,4 @@
-from lettuce import world, step
+from aloe import world, step
 from selenium.webdriver.support.expected_conditions import \
     visibility_of_element_located, invisibility_of_element_located, \
     presence_of_element_located

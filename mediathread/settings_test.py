@@ -7,7 +7,6 @@ TEMPLATES[0]['OPTIONS']['debug'] = DEBUG
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': './lettuce.db',
         'OPTIONS': {
             'timeout': 30,
         },
@@ -19,18 +18,9 @@ BROWSER = 'Headless'
 # BROWSER = 'Firefox'
 # BROWSER = 'Chrome'
 
-LETTUCE_SERVER_PORT = 8002
-
-LETTUCE_APPS = (
-    'mediathread.assetmgr',
-    'mediathread.discussions',
-    'mediathread.main',
-    'mediathread.projects',
-    'mediathread.taxonomy'
-)
-
-LETTUCE_DJANGO_APP = ['lettuce.django']
-INSTALLED_APPS = INSTALLED_APPS + LETTUCE_DJANGO_APP
+INSTALLED_APPS = INSTALLED_APPS + [
+    'aloe_django',
+]
 
 PASSWORD_HASHERS = (
     'django.contrib.auth.hashers.MD5PasswordHasher',

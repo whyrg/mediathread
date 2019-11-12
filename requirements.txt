@@ -6,22 +6,27 @@ pep8==1.7.1
 pyflakes==2.1.1
 mccabe==0.6.1
 pycodestyle==2.5.0
-enum34==1.1.6; python_version < '3.4'
 configparser==4.0.2
 flake8==3.7.9
 lxml==4.4.1
-fuzzywuzzy==0.17.0  # lettuce
-mock==3.0.5  # sure
-sure==1.4.11  # lettuce
 extras==1.0.0
-linecache2==1.0.0  # traceback2
-traceback2==1.4.0  # testtools
 fixtures==3.0.0
-testtools==2.3.0  # python-subunit
 pbr>=0.11
-testscenarios==0.5.0  # python-subunit
-python-subunit==1.3.0  # lettuce
-requirements/src/lettuce-0.2.25.ccnmtl-py2.py3-none-any.whl
+
+# aloe requirements
+ansicolors>=1.1.8
+colorama>=0.3.9
+future>=0.17.0
+gherkin-official>=4.1.3, <5
+nose
+repoze.lru
+aloe==0.1.19
+
+# aloe-django requirements
+cssselect>=0.7.1
+django-nose>=1.4.4
+aloe-django==0.1.6
+
 selenium==3.141.0
 six==1.13.0
 sqlparse==0.3.0  # django-debug-toolbar
@@ -123,9 +128,7 @@ ccnmtlsettings==1.6.0
 django-extensions==2.2.5
 
 # needed for django-extensions
-typing==3.7.4.1; python_version < '3.5'
 
-futures==3.2.0; python_version < '3'
 s3transfer==0.2.1
 jmespath==0.9.4
 
@@ -150,7 +153,6 @@ pyyaml==5.1.2
 bandit==1.6.2
 funcsigs==1.0.2 
 pypanopto==0.1.1
-functools32==3.2.3-2; python_version < '3'
 entrypoints==0.3
 
 billiard==3.6.1.0

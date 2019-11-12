@@ -1,5 +1,5 @@
-from lettuce.django import django_url
-from lettuce import world, step
+from aloe_django import django_url
+from aloe import world, step
 from selenium.webdriver.support.select import Select
 from selenium.common.exceptions import NoSuchElementException
 

@@ -7,8 +7,8 @@ from django.conf import settings
 from django.core import management
 from django.core.urlresolvers import reverse
 from django.test import client
-from lettuce import before, after, world, step
-from lettuce import django
+from aloe import before, after, world, step
+from aloe_django import django
 from selenium.common.exceptions import NoSuchElementException, \
     StaleElementReferenceException, InvalidElementStateException
 from selenium.webdriver.common.by import By
@@ -35,7 +35,7 @@ def migrate_database(variables):
     management.call_command('migrate', verbosity=0, interactive=False)
 
 
-@before.each_scenario
+@before.each_example
 def reset_database(variables):
     world.using_selenium = False
     management.call_command('flush', verbosity=0, interactive=False)

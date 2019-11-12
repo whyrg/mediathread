@@ -1,4 +1,4 @@
-from lettuce import world, step, django
+from aloe import world, step, django
 from selenium.webdriver.support.expected_conditions import \
     invisibility_of_element_located, visibility_of_element_located
 import selenium.webdriver.support.ui as ui
