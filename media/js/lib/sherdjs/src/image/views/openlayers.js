@@ -30,16 +30,7 @@ An annotation looks like this:
 
  ***/
 
-if (!Math.log2) {
-    var div = Math.log(2);
-    Math.log2 = function (x) {
-        return Math.log(x) / div;
-    };
-}
-if (!window.console) {
-    window.console = { log: function () {} };
-}
-if (!Sherd) { Sherd = {}; }
+if (!Sherd) { var Sherd = {}; }
 if (!Sherd.Image) { Sherd.Image = {}; }
 if (!Sherd.Image.OpenLayers) {
     /*reference files
@@ -116,7 +107,7 @@ if (!Sherd.Image.OpenLayers) {
                                                [topleft[0], bottom], //bottomleft
                                                topleft]); //return to topleft
                 }
-                return self.openlayers.GeoJSON.parseFeature({geometry: geometry});
+                return self.openlayers.GeoJSON.readFeature({geometry: geometry});
             },
             'object_proportioned': function (object) {
                 var dim = {w: 180, h: 90};
@@ -135,11 +126,7 @@ if (!Sherd.Image.OpenLayers) {
                 ///test image: 466x550, 1694x2000
                 ///180/2000.0 * 1694 = 152.46 (/2 = 76.23)
                 var dim = self.openlayers.object_proportioned(object);
-                return new OpenLayers.Bounds(-dim.w,
-                        -dim.h,
-                        dim.w,
-                        dim.h
-                );
+                return [-dim.w, -dim.h, dim.w, dim.h];
             }
         };
 
@@ -172,7 +159,7 @@ if (!Sherd.Image.OpenLayers) {
                 for (var i = 0, l = this.all_layers.length; i < l; i++) {
                     var layer = this.all_layers[i];
                     this.root.layers[layer.id].index = i;
-                    layer.map.setLayerIndex(layer, i + 1);//+1 for the baseLayer
+                    //layer.map.setLayerIndex(layer, i + 1);//+1 for the baseLayer
                 }
                 if (opts.onmouseenter) {
                     this.root.hover = true;
@@ -187,7 +174,7 @@ if (!Sherd.Image.OpenLayers) {
                     listeners.onclick = opts.onclick;
                 }
 
-                this.root.globalMouseListener = new OpenLayers.Control.SelectFeature(this.all_layers, {
+                /*this.root.globalMouseListener = new OpenLayers.Control.SelectFeature(this.all_layers, {
                     'hover': this.root.hover,
                     overFeature: function (feature) {
                         var lay = layerSelf.root.layers[feature.layer.id];
@@ -209,20 +196,20 @@ if (!Sherd.Image.OpenLayers) {
                     },
                     highlightOnly: true,
                     renderIntent: "temporary"
-                });
-                self.openlayers.map.addControl(this.root.globalMouseListener);
-                this.root.globalMouseListener.activate();
+                });*/
+                //self.openlayers.map.addControl(this.root.globalMouseListener);
+                //this.root.globalMouseListener.activate();
 
             },
             create: function (name, opts) {
                 /* opts = {title, onclick(ann_id, layer_name), onhover(ann_id, layer_name), }
                  */
-                this.v = new OpenLayers.Layer.Vector(name || "Annotations", { projection: 'Flatland:1',
+                this.v = new ol.layer.Vector(name || "Annotations", { projection: 'Flatland:1',
                     rendererOptions: { zIndexing: true }
                 });
                 this.name = name;
                 this._anns = {};
-                this.v.styleMap = new OpenLayers.StyleMap(self.openlayers.styles);
+                //this.v.styleMap = new OpenLayers.StyleMap(self.openlayers.styles);
                 this.zIndex = (opts && opts.zIndex) || 200; //used to order layers
                 this.v.setZIndex(this.zIndex);
                 this.v.sherd_layername = name;
@@ -250,7 +237,9 @@ if (!Sherd.Image.OpenLayers) {
                 if (!this.v) {
                     throw new Error('layer not created yet');
                 }
-                var feature_bg = self.openlayers.GeoJSON.parseFeature(ann);
+                console.log('a', 'hi', ann, self.openlayers.GeoJSON);
+                var feature_bg = self.openlayers.GeoJSON.readFeature(ann);
+                console.log('f', feature_bg);
                 var feature_fg = feature_bg.clone();
                 var features = [feature_bg, feature_fg];
                 feature_bg.renderIntent = 'blackbg';
@@ -269,15 +258,15 @@ if (!Sherd.Image.OpenLayers) {
                         if (opts.color in this.v.styleMap.styles) {
                             feature_fg.renderIntent = opts.color;
                         } else if (feature_fg.geometry) {
-                            //unique to each feature, for graphicZIndex
+                            //unique to each feature, for zIndex
                             var feature_style = feature_fg.id + ':' + opts.color;
                             //feature_fg.geometry.getArea(); //alt zIndex measure
-                            this.v.styleMap.styles[feature_style] = new OpenLayers.Style({
+                            this.v.styleMap.styles[feature_style] = new ol.style.Style({
                                 fillOpacity: 0,
                                 strokeWidth: 1,
                                 strokeColor: opts.color,
                                 pointerEvents: (opts.pointerEvents),
-                                graphicZIndex: (opts.zIndex || 300 - parseInt(feature_fg.geometry.getBounds().top, 10))
+                                zIndex: (opts.zIndex || 300 - parseInt(feature_fg.geometry.getBounds().top, 10))
                             });
                             feature_fg.renderIntent = feature_style;
                         }
@@ -301,7 +290,6 @@ if (!Sherd.Image.OpenLayers) {
                 if (!this.v) {
                     return;
                 }
-                this.v.removeAllFeatures();
                 for (var ann_id in this._anns) {
                     if (this._anns.hasOwnProperty(ann_id)) {
                         delete this._anns[ann_id];
@@ -309,10 +297,10 @@ if (!Sherd.Image.OpenLayers) {
                 }
             },
             show: function () {
-                this.v.setVisibility(true);
+                this.v.setVisible(true);
             },
             hide: function () {
-                this.v.setVisibility(false);
+                this.v.setVisible(false);
             },
             //extension for internal openlayers stuff
             getLayer: function () {
@@ -343,15 +331,17 @@ if (!Sherd.Image.OpenLayers) {
                 },
                 initialize: function (obj, presenter) {
                     ///remove controls
-                    var m = presenter.openlayers.map;
-                    var controls = m.getControlsByClass('OpenLayers.Control.Navigation');
+
+                    // TODO: port the following to openlayers 3
+                    /* var m = presenter.openlayers.map;
+                    var controls = m.getControl();
                     for (var i = 0; i < controls.length; i++) {
                         controls[i].disableZoomWheel();
                     }
 
                     while (m.controls.length) {
                         m.removeControl(m.controls[0]);
-                    }
+                    }*/
                 },
                 resize: function () {}
             },
@@ -424,7 +414,7 @@ if (!Sherd.Image.OpenLayers) {
                 if (obj.feature) {
                     self.currentfeature = obj.feature;
                 } else if (obj.geometry) {//obj is a json feature
-                    self.currentfeature = self.openlayers.GeoJSON.parseFeature(obj);
+                    self.currentfeature = self.openlayers.GeoJSON.readFeature(obj);
                 } else if (obj.xywh) {//obj is a mediafragment box
                     self.currentfeature = self.openlayers.frag2feature(obj, self.openlayers.map);
                 } else {
@@ -447,22 +437,23 @@ if (!Sherd.Image.OpenLayers) {
                 if (!obj.preserveCurrentFocus) {
                     if (obj.zoom &&
                         obj.zoom < self.openlayers.map.getZoomForExtent(bounds)) {
-                        self.openlayers.map.setCenter(bounds.getCenterLonLat(), obj.zoom);
+                        self.openlayers.map.getView().setCenter(bounds.getCenterLonLat());
+                        self.openlayers.map.getView().setZoom(obj.zoom);
                     } else {
                         self.openlayers.map.zoomToExtent(bounds);
                     }
                 }
             } else if (!obj || !obj.preserveCurrentFocus) {
                 if (state.x !== undefined) {
-                    self.openlayers.map.setCenter(
-                            new OpenLayers.LonLat(state.x, state.y), state.zoom
-                    );
+                    var view = self.openlayers.map.getView();
+                    view.setCenter(ol.extent.getCenter([
+                        -state.x, -state.y, state.x, state.y
+                    ]));
+                    view.setZoom(state.zoom);
                 } else {
-                    self.openlayers.map.zoomToMaxExtent();
+                    ol.control.ZoomToExtent();
                 }
             }
-
-
         };
         this.microformat = {};
         this.microformat.create = function (obj, doc, options) {
@@ -475,20 +466,21 @@ if (!Sherd.Image.OpenLayers) {
                     projection: 'Flatland:1',
                     ///extraneous, for tiling, but ?good? default?
                     ///must be this way for tiling, in any case.
-                    maxExtent: new OpenLayers.Bounds(-180, -90, 180, 90)
+                    maxExtent: [-180, -90, 180, 90]
                 //,units:'m'
                 };
             }
             if (obj['image-metadata']) {
                 obj.options.numZoomLevels = Math.ceil(
-                        Math.log2(Math.max(obj['image-metadata'].height,
-                                obj['image-metadata'].width)) - 5);
+                    Math.log2(Math.max(obj['image-metadata'].height,
+                                       obj['image-metadata'].width)) - 5);
             }
             return {
                 object: obj,
                 htmlID: wrapperID,
-                text: '<center><div id="' + wrapperID + '" class="sherd-openlayers-map"></div></center>',
-                winHeight: options && options.functions && options.functions.winHeight ? options.functions.winHeight : Sherd.winHeight
+                text: '<div id="' + wrapperID + '" class="sherd-openlayers-map"></div>',
+                winHeight: (options && options.functions && options.functions.winHeight)
+                    ? options.functions.winHeight : Sherd.winHeight
             };
         };
         this.microformat.update = function (obj, html_dom) {
@@ -499,10 +491,11 @@ if (!Sherd.Image.OpenLayers) {
         this.deinitialize = function () {
             if (this.openlayers.map) {
                 this.Layer.prototype.destroyAll();
-                this.openlayers.map.destroy();
+                // TODO: is this the best way to remove an ol.Map?
+                delete this.openlayers.map;
             }
         };
-        this.initialize = function (create_obj) {
+        this.initialize = function(create_obj) {
             if (!create_obj) {
                 return;
             }
@@ -523,8 +516,24 @@ if (!Sherd.Image.OpenLayers) {
             }
             top.style.width = presentation.width(create_obj.object, self);
             top.style.height = presentation.height(create_obj.object, self);
+            var bounds = self.openlayers.object2bounds(create_obj.object);
+            var projection = new ol.proj.Projection({
+                code: 'Flatland:1',
+                units: 'pixels',
+                extent: bounds
+            });
 
-            self.openlayers.map =  new OpenLayers.Map(create_obj.htmlID);
+            self.openlayers.map = new ol.Map({
+                target: create_obj.htmlID,
+                interactions: ol.interaction.defaults({mouseWheelZoom: false}),
+                controls: [],
+                view: new ol.View({
+                    projection: projection,
+                    center: ol.extent.getCenter(bounds),
+                    zoom: 1,
+                    maxZoom: 8
+                })
+            });
             var objopt = create_obj.object.options;
             if (create_obj.object.xyztile &&
                 // Always use an untiled version for digitaltibet. This
@@ -546,26 +555,29 @@ if (!Sherd.Image.OpenLayers) {
                       zoom levels, Futhermore, the top seems to matter also
                       (setting to 90 also breaks at different places)
                     */
-                    objopt.maxExtent = new OpenLayers.Bounds(-180,
-                                                             -280,//80-Math.ceil(md.height*px2deg),
-                                                             -180 + Math.ceil(md.width * px2deg),
-                                                             80);
+                    objopt.maxExtent = [
+                        -180,
+                        -280,//80-Math.ceil(md.height*px2deg),
+                        -180 + Math.ceil(md.width * px2deg),
+                        80
+                    ];
                 } else {
                     //everything should fit in this?
-                    objopt.maxExtent = new OpenLayers.Bounds(-180, (80 - 360), 180, 80);
+                    objopt.maxExtent = [-180, (80 - 360), 180, 80];
                 }
-                self.openlayers.graphic = new OpenLayers.Layer.XYZ(
-                    create_obj.object.title || 'Image',
-                    create_obj.object.xyztile,
-                    //"http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Portland/ESRI_LandBase_WebMercator/MapServer/tile/${z}/${y}/${x}",
-                    objopt
+                self.openlayers.graphic = new ol.layer.Image(
+                    jQuery.extend(objopt, {
+                        title: create_obj.object.title || 'Image',
+                        source: create_obj.object.xyztile
+                        //"http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Portland/ESRI_LandBase_WebMercator/MapServer/tile/${z}/${y}/${x}",
+                    })
                 );
                 self.openlayers.map.maxExtent = objopt.maxExtent;
                 ///HACK: to make the tiler work for partial tiles (e.g. not exactly 256x256)
-                self.openlayers.graphic.getImageSize = function () { return null; };
+                /*self.openlayers.graphic.getImageSize = function () { return null; };
                 self.openlayers.graphic.zoomToMaxExtent = function () {
                     self.openlayers.map.setCenter(this.maxExtent.getCenterLonLat());
-                };
+                };*/
                 self.current_obj = {
                     create_obj: create_obj,
                     dim: md,
@@ -616,21 +628,28 @@ if (!Sherd.Image.OpenLayers) {
                     };
                 }
             } else {
-                var o2b = self.openlayers.object2bounds;
-                var bounds = o2b(create_obj.object);
+                var bounds = self.openlayers.object2bounds(create_obj.object);
+
                 ///TODO: if no create_obj.object.width, test with createElement('img')
                 var odim = self.openlayers.object_proportioned(create_obj.object);
 
-                objopt.maxExtent = o2b(create_obj.object);
-                self.openlayers.graphic = new OpenLayers.Layer.Image(
-                    create_obj.object.title || 'Image',
-                    create_obj.object.image,//url of image
-                    bounds,
-                    //just proportional size: probably much smaller than the actual image
-                    ///this allows us to 'zoom out' to smaller than actual image size
-                    new OpenLayers.Size(odim.w, odim.h),
-                    objopt
-                );
+                objopt.maxExtent = self.openlayers.object2bounds(create_obj.object);
+                var projection = new ol.proj.Projection({
+                    code: 'Flatland:1',
+                    units: 'pixels',
+                    extent: bounds
+                });
+                self.openlayers.graphic = new ol.layer.Image({
+                    title: create_obj.object.title || 'Image',
+                    source: new ol.source.ImageStatic({
+                        url: create_obj.object.image,
+                        projection: projection,
+                        // just proportional size: probably much smaller
+                        // than the actual image this allows us to 'zoom
+                        // out' to smaller than actual image size.
+                        imageExtent: [-odim.w, -odim.h, odim.w, odim.h]
+                    })
+                });
                 self.current_obj = {
                     create_obj: create_obj,
                     dim: create_obj.object['image-metadata'],
@@ -640,60 +659,77 @@ if (!Sherd.Image.OpenLayers) {
 
             var projection = 'Flatland:1';//also 'EPSG:4326' and Spherical Mercator='EPSG:900913'
             self.openlayers.styles  = {
-                'highlight': new OpenLayers.Style({
-                    fillOpacity: 0,
-                    strokeWidth: 6,
-                    strokeColor: '#ffffff',
-                    pointerEvents: 'none',
-                    labelSelect: false,
-                    graphicZIndex: 1
+                'highlight': new ol.style.Style({
+                    fill: new ol.style.Fill([255, 255, 255, 0]),
+                    stroke: new ol.style.Stroke({
+                        width: 6,
+                        color: [255, 255, 255, 1]
+                    }),
+                    zIndex: 1
                 }),
-                'grey': new OpenLayers.Style({
-                    fillOpacity: 0,
+                'grey': new ol.style.Style({
+                    fill: new ol.style.Fill([255, 255, 255, 0]),
+                    stroke: new ol.style.Stroke({
+                        width: 2,
+                        color: [144, 80, 80, 1]
+                    }),
+                    zIndex: 5
+                }),
+                'blackbg': new ol.style.Style({
+                    fill: new ol.style.Fill([255, 255, 255, 0]),
+                    stroke: new ol.style.Stroke({
+                        width: 3,
+                        color: [0, 0, 0, 1]
+                    }),
+                    zIndex: 0
+                }),
+                'defaulta': new ol.style.Style({
+                    fill: new ol.style.Fill([255, 255, 255, 0]),
+                    stroke: new ol.style.Stroke({
+                        width: 2,
+                    }),
+                    zIndex: 0
+                }),
+                'white': new ol.style.Style({
+                    fill: new ol.style.Fill([255, 255, 255, 0]),
+                    stroke: new ol.style.Stroke({
+                        width: 4,
+                        color: [255, 255, 255, 1]
+                    }),
+                    zIndex: 0
+                }),
+                'defaultx': new ol.style.Style({
+                    fill: new ol.style.Fill([255, 255, 255, 0]),
                     strokeWidth: 2,
-                    strokeColor: '#905050',
-                    pointerEvents: 'none',
-                    graphicZIndex: 5
-                }),
-                'blackbg': new OpenLayers.Style({
-                    fillOpacity: 0,
-                    strokeWidth: 3,
-                    strokeColor: '#000000',
-                    pointerEvents: 'none',
-                    graphicZIndex: 0
-                }),
-                'defaulta': new OpenLayers.Style({
-                    fillOpacity: 0,
-                    strokeWidth: 2,
-                    graphicZIndex: 0
-                }),
-                /*pointerEvents is 'none', so the event can be captured by a Layer underneath */
-                'white': new OpenLayers.Style({
-                    fillOpacity: 0,
-                    strokeWidth: 4,
-                    strokeColor: '#ffffff',
-                    pointerEvents: 'none',
-                    labelSelect: false,
-                    graphicZIndex: 0
-                }),
-                'defaultx': new OpenLayers.Style({
-                    fillOpacity: 0,
-                    strokeWidth: 2,
-                    pointerEvents: 'none',
-                    labelSelect: false,
-                    graphicZIndex: 0
+                    stroke: new ol.style.Stroke({
+                        width: 2,
+                    }),
+                    zIndex: 0
                 })
             };
 
-            self.openlayers.map.addControl(new OpenLayers.Control.MousePosition());
-            self.openlayers.map.addLayers([self.openlayers.graphic]);
+            self.openlayers.map.addControl(new ol.control.MousePosition());
+            self.openlayers.map.addLayer(self.openlayers.graphic);
+
+            if (
+                self.openlayers.graphic.getSource() &&
+                    self.openlayers.graphic.getSource().image_
+            ) {
+                self.openlayers.map.getView().setCenter(
+                    ol.extent.getCenter(
+                        self.openlayers.graphic.getSource().image_.extent)
+                );
+            }
+
             self.openlayers.vectorLayer = new self.Layer().create('annotating', {
                 zIndex: 1000
             });
 
-            self.openlayers.GeoJSON = new OpenLayers.Format.GeoJSON({
-                'internalProjection': self.openlayers.map.baseLayer.projection,
-                'externalProjection': new OpenLayers.Projection(projection)
+            self.openlayers.GeoJSON = new ol.format.GeoJSON({
+                'defaultDataProjection': self.openlayers.graphic.getSource().projection,
+                'featureProjection': new ol.proj.Projection({
+                    code: projection
+                })
             });
 
             presentation.initialize(create_obj.object, self);

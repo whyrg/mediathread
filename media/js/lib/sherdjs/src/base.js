@@ -1,7 +1,7 @@
 /* global Sherd: true, $f: true, djangosherd: true */
 
 if (typeof Sherd === 'undefined' || !Sherd) {
-    Sherd = {};
+    var Sherd = {};
 }
 
 //?wrap in module?
@@ -339,7 +339,4 @@ if (typeof jQuery !== 'undefined') {
             jQuery(subject).trigger(event, [param]);
         }
     };
-} //end jquery
-else {
-    throw new Error('Use a framework, Dude! MochiKit, jQuery, YUI, whatever!');
 }

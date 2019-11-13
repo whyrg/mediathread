@@ -1,6 +1,6 @@
 /* global Sherd: true */
 if (typeof Sherd === 'undefined') {
-    Sherd = {};
+    var Sherd = {};
 }
 
 // TODO used?

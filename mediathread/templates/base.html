@@ -7,14 +7,14 @@
         <meta charset="utf-8">
         <title>Mediathread {% block title %}&mdash; Switch Course{% endblock %}</title>
 
-        <script type="text/javascript" src='{% static "jquery/js/jquery-2.2.4.min.js" %}'></script>
+        <script type="text/javascript" src='{% static "jquery/js/jquery-3.4.1.min.js" %}'></script>
         {% bootstrap_javascript %}
         <script src='{% static "jquery/js/jquery-ui.min.js" %}'></script>
         <script src='{% static "jquery/js/jquery.mousewheel.min.js" %}'></script>
         <script src="{% static 'js/mustache/mustache.min.js' %}"></script>
         <script src="{{STATIC_URL}}js/flowplayer/flowplayer.min.js"></script>
 
-        <script type="text/javascript" src="{% static 'js/lib/sherdjs/lib/OpenLayers-min.js' %}"></script>
+        <script type="text/javascript" src="{% static 'js/lib/sherdjs/lib/ol.js' %}"></script>
         <script type="text/javascript" src="/jsi18n"></script>
 
         {% if not debug %}
