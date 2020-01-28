@@ -17,7 +17,7 @@ MANAGE ?= ./manage.py
 REQUIREMENTS ?= requirements.txt
 PY_SENTINAL ?= $(VE)/sentinal
 WHEEL_VERSION ?= 0.33.6
-PIP_VERSION ?= 19.3.1
+PIP_VERSION ?= 20.0.2
 VIRTUALENV ?= virtualenv.py
 SUPPORT_DIR ?= requirements/virtualenv_support/
 MAX_COMPLEXITY ?= 10
@@ -30,8 +30,10 @@ PIP ?= $(VE)/bin/pip
 
 ifeq ($(TRAVIS),true)
 	SYS_PYTHON ?= python
+	COVERAGE ?= coverage
 else
 	SYS_PYTHON ?= python3
+	COVERAGE ?= $(VE)/bin/coverage
 endif
 
 jenkins: check flake8 test eslint bandit
@@ -47,7 +49,8 @@ $(PY_SENTINAL): $(REQUIREMENTS) $(VIRTUALENV) $(SUPPORT_DIR)*
 	touch $@
 
 test: $(PY_SENTINAL)
-	$(MANAGE) jenkins --pep8-exclude=migrations --enable-coverage --coverage-rcfile=.coveragerc
+	$(COVERAGE) run --source='.' --omit=$(VE)/* $(MANAGE) test $(PY_DIRS)
+	$(COVERAGE) xml -o reports/coverage.xml
 
 parallel-tests: $(PY_SENTINAL)
 	$(MANAGE) test --parallel
