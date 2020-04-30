@@ -12,7 +12,14 @@ export default class CollectionTab extends React.Component {
         super(props);
         this.state = {
             viewMode: 'grid',
-            selectedAsset: null
+            selectedAsset: null,
+            searchFilters: {
+                owner: 'all',
+                title: null,
+                tags: [],
+                terms: [],
+                date: 'all'
+            }
         };
 
         this.setViewMode = this.setViewMode.bind(this);
