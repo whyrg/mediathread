@@ -344,9 +344,9 @@ export default class AssetDetail extends React.Component {
                                 <div className="col-sm-4">
                                     <div className="input-group">
                                         <div className="form-check form-control-sm">
-                                            <input className="form-check-input" type="checkbox" value="" id="defaultCheck1" disabled="" />
-                                            <label className="form-check-label" htmlFor="defaultCheck1">
-                                                Overlay All Selection Graphics
+                                            <input className="form-check-input" type="checkbox" id="overlayAllCheckbox" />
+                                            <label className="form-check-label" htmlFor="overlayAllCheckbox">
+                                                Overlay all selections
                                             </label>
                                         </div>
                                     </div>
