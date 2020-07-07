@@ -1,6 +1,4 @@
 from django.urls import path, include
-from rest_framework import routers
-
 from mediathread.projects.apiviews import ProjectSequenceAssetViewSet
 from mediathread.projects.views import (
     ProjectCreateView, ProjectDeleteView, ProjectSortView,
@@ -8,8 +6,9 @@ from mediathread.projects.views import (
     UnsubmitResponseView, ProjectReadOnlyView, project_export_msword,
     project_export_html, project_revisions,
     SequenceAssignmentEditView,
-    UpdateVisibilityView
+    UpdateVisibilityView, CompositionView, CompositionAssignmentView
 )
+from rest_framework import routers
 
 
 router = routers.DefaultRouter()
@@ -39,6 +38,15 @@ urlpatterns = [
 
     path('view/<int:project_id>/<slug:feedback>/',
          ProjectDispatchView.as_view(), {}, name='project-workspace-feedback'),
+
+    # Temporary endpoints for the composition views
+    path('view/c/<int:project_id>/',
+         CompositionView.as_view(), {},
+         name='composition-workspace'),
+
+    path('view/a/<int:project_id>/',
+         CompositionAssignmentView.as_view(), {},
+         name='composition-assignment-workspace'),
 
     path('save/<int:project_id>/',
          ProjectSaveView.as_view(), {},

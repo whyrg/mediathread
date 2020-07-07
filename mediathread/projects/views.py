@@ -480,6 +480,40 @@ class SequenceAssignmentView(AssignmentView):
         }
 
 
+class CompositionView(LoggedInCourseMixin, ProjectReadableMixin,
+                      JSONResponseMixin, TemplateView):
+
+    template_name = 'projects/composition.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['project'] = self.project
+        ctx['course'] = self.request.course
+
+        a = Project.objects.unresponded_assignments(
+            self.request.course, self.request.user)
+        ctx['unresponded'] = len(a)
+
+        return ctx
+
+
+class CompositionAssignmentView(LoggedInCourseMixin, ProjectReadableMixin,
+                                JSONResponseMixin, TemplateView):
+
+    template_name = 'projects/composition_assignment.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['project'] = self.project
+        ctx['course'] = self.request.course
+
+        a = Project.objects.unresponded_assignments(
+            self.request.course, self.request.user)
+        ctx['unresponded'] = len(a)
+
+        return ctx
+
+
 class DefaultProjectView(LoggedInCourseMixin, ProjectReadableMixin,
                          JSONResponseMixin, TemplateView):
     """Displays the Composition project view."""

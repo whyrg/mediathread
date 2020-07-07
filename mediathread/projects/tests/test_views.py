@@ -1265,3 +1265,59 @@ class AssignmentListViewTest(MediathreadTestMixin, TestCase):
         self.assertEquals(ctx['object_list'][1], a1)
         self.assertEquals(ctx['sortby'], 'full_name')
         self.assertEquals(ctx['direction'], 'desc')
+
+
+class CompositionViewTest(MediathreadTestMixin, TestCase):
+
+    def setUp(self):
+        self.setup_sample_course()
+        self.project = ProjectFactory.create(
+            course=self.sample_course, author=self.student_one,
+            policy='PrivateEditorsAreOwners', project_type='composition')
+
+        self.url = reverse('composition-workspace',
+                           args=[self.sample_course.id, self.project.id])
+
+    def test_anonymous(self):
+        response = self.client.get(self.url)
+        self.assertEquals(response.status_code, 302)
+
+    def test_forbidden(self):
+        self.client.login(username=self.student_two.username,
+                          password='test')
+        response = self.client.get(self.url)
+        self.assertEquals(response.status_code, 403)
+
+    def test_allowed(self):
+        self.client.login(username=self.student_one.username,
+                          password='test')
+        response = self.client.get(self.url)
+        self.assertEquals(response.status_code, 200)
+
+
+class CompositionAssignmentViewTest(MediathreadTestMixin, TestCase):
+
+    def setUp(self):
+        self.setup_sample_course()
+        self.project = ProjectFactory.create(
+            course=self.sample_course, author=self.instructor_one,
+            policy='PrivateEditorsAreOwners', project_type='composition')
+
+        self.url = reverse('composition-assignment-workspace',
+                           args=[self.sample_course.id, self.project.id])
+
+    def test_anonymous(self):
+        response = self.client.get(self.url)
+        self.assertEquals(response.status_code, 302)
+
+    def test_forbidden(self):
+        self.client.login(username=self.student_two.username,
+                          password='test')
+        response = self.client.get(self.url)
+        self.assertEquals(response.status_code, 403)
+
+    def test_allowed(self):
+        self.client.login(username=self.instructor_one.username,
+                          password='test')
+        response = self.client.get(self.url)
+        self.assertEquals(response.status_code, 200)
