@@ -14,14 +14,13 @@ import ImageLayer from 'ol/layer/Image';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
 import Projection from 'ol/proj/Projection';
-import GeoJSON from 'ol/format/GeoJSON';
 import Static from 'ol/source/ImageStatic';
 
 import Asset from '../Asset';
 import {
     getAsset, createSherdNote, deleteSelection,
-    formatTimecode, parseTimecode, getCoordStyles,
-    transform, getPlayerTime
+    formatTimecode, parseTimecode,
+    displaySelection, getPlayerTime
 } from '../utils';
 import CreateSelection from './CreateSelection';
 import ViewSelections from './ViewSelections';
@@ -287,46 +286,8 @@ export default class AssetDetail extends React.Component {
             if (this.selectionLayer) {
                 this.map.removeLayer(this.selectionLayer);
             }
-
-            const img = this.asset.getImage();
-            const geometry = transform(
-                a.annotation.geometry,
-                img.width, img.height,
-                a.annotation.zoom
-            );
-            const geojsonObject = {
-                type: 'FeatureCollection',
-                crs: {
-                    type: 'name',
-                    properties: {
-                        name: 'Flatland:1'
-                    }
-                },
-                features: [
-                    {
-                        type: 'Feature',
-                        geometry: geometry
-                    }
-                ]
-            };
-
-            const source = new VectorSource({
-                features: new GeoJSON().readFeatures(geojsonObject)
-            });
-
-            const newLayer = new VectorLayer({
-                source: source,
-                style: getCoordStyles()
-            });
-
+            const newLayer = displaySelection(a, this.asset, this.map);
             this.selectionLayer = newLayer;
-            this.map.addLayer(newLayer);
-
-            // Fit the selection in the view
-            const feature = source.getFeatures()[0];
-            const polygon = feature.getGeometry();
-            const view = this.map.getView();
-            view.fit(polygon, {padding: [20, 20, 20, 20]});
         } else if (type === 'video') {
             const player = this.playerRef;
             player.seekTo(a.range1, 'seconds');
@@ -621,7 +582,7 @@ export default class AssetDetail extends React.Component {
             const img = this.asset.getImage();
 
             const extent = [
-                0, 0,
+                -img.width, -img.height,
                 img.width, img.height
             ];
 

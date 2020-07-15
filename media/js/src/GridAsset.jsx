@@ -1,25 +1,22 @@
+/* eslint max-len: 0 */
+
 import React from 'react';
 import PropTypes from 'prop-types';
 
 import Map from 'ol/Map';
 import View from 'ol/View';
-import GeoJSON from 'ol/format/GeoJSON';
-import MultiPoint from 'ol/geom/MultiPoint';
 import {getCenter} from 'ol/extent';
 import ImageLayer from 'ol/layer/Image';
+import Projection from 'ol/proj/Projection';
+import ImageStatic from 'ol/source/ImageStatic';
 import VectorLayer from 'ol/layer/Vector';
 import VectorSource from 'ol/source/Vector';
-import Projection from 'ol/proj/Projection';
-import Static from 'ol/source/ImageStatic';
-import {
-    Circle as CircleStyle, Fill, Stroke, Style
-} from 'ol/style';
 
 import AnnotationScroller from './AnnotationScroller';
 import Asset from './Asset';
 import {
     capitalizeFirstLetter, handleBrokenImage,
-    getCoordStyles, transform, getCourseUrl
+    displaySelection, getCourseUrl
 } from './utils';
 
 class Selections extends React.Component {
@@ -78,49 +75,9 @@ export default class GridAsset extends React.Component {
         this.setState({selectedAnnotation: a});
 
         if (type === 'image') {
-            const styles = getCoordStyles();
-
             this.map.removeLayer(this.selectionLayer);
-
-            const img = this.asset.getImage();
-            const geometry = transform(
-                a.annotation.geometry,
-                img.width, img.height,
-                a.annotation.zoom
-            );
-            const geojsonObject = {
-                type: 'FeatureCollection',
-                crs: {
-                    type: 'name',
-                    properties: {
-                        name: 'Flatland:1'
-                    }
-                },
-                features: [
-                    {
-                        type: 'Feature',
-                        geometry: geometry
-                    }
-                ]
-            };
-
-            const source = new VectorSource({
-                features: new GeoJSON().readFeatures(geojsonObject)
-            });
-
-            const newLayer = new VectorLayer({
-                source: source,
-                style: styles
-            });
-
+            const newLayer = displaySelection(a, this.asset, this.map);
             this.selectionLayer = newLayer;
-            this.map.addLayer(newLayer);
-
-            // Fit the selection in the view
-            const feature = source.getFeatures()[0];
-            const polygon = feature.getGeometry();
-            const view = this.map.getView();
-            view.fit(polygon, {padding: [20, 20, 20, 20]});
         }
     }
     render() {
@@ -215,7 +172,7 @@ export default class GridAsset extends React.Component {
             const img = this.asset.getImage();
 
             const extent = [
-                0, 0,
+                -img.width, -img.height,
                 img.width, img.height
             ];
 
@@ -231,7 +188,7 @@ export default class GridAsset extends React.Component {
                 interactions: [],
                 layers: [
                     new ImageLayer({
-                        source: new Static({
+                        source: new ImageStatic({
                             url: img.url,
                             projection: projection,
                             imageExtent: extent

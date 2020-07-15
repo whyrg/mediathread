@@ -2,6 +2,9 @@ import isFinite from 'lodash/isFinite';
 import find from 'lodash/find';
 import {groupBy, sortBy} from 'lodash';
 
+import GeoJSON from 'ol/format/GeoJSON';
+import VectorLayer from 'ol/layer/Vector';
+import VectorSource from 'ol/source/Vector';
 import {
     Circle as CircleStyle, Fill, Stroke, Style
 } from 'ol/style';
@@ -303,17 +306,69 @@ const getCoordStyles = function() {
  * height, and zoom.
  */
 const transform = function(geometry, width, height, zoom) {
+    console.log('transform', geometry, width, height, zoom);
+    //return geometry;
+    let coordinates = [];
+    if (geometry.coordinates.length > 0) {
+        coordinates = geometry.coordinates[0];
+    }
+
     return {
         type: geometry.type,
         coordinates: [
-            geometry.coordinates[0].map(function(el) {
+            coordinates.map(function(el) {
                 return [
-                    (width / 2) + (el[0] * (zoom * 2)),
-                    (height / 2) + (el[1] * (zoom * 2))
+                    el[0] * zoom * 4,
+                    el[1] * zoom * 4
                 ];
             })
         ]
     };
+};
+
+/**
+ * Display the given annotation on the given OpenLayers map.
+ *
+ * Returns the new VectorLayer.
+ */
+const displaySelection = function(a, asset, map) {
+    const styles = getCoordStyles();
+
+    const img = asset.getImage();
+    console.log(a.annotation);
+    const geometry = transform(
+        a.annotation.geometry,
+        img.width, img.height,
+        a.annotation.zoom
+    );
+
+    const projection = map.getView().getProjection();
+    const source = new VectorSource({
+        features: [
+            new GeoJSON({
+                dataProjection: projection,
+                featureProjection: projection
+            }).readFeature({
+                type: 'Feature',
+                geometry: geometry
+            })
+        ]
+    });
+
+    const newLayer = new VectorLayer({
+        source: source,
+        style: styles
+    });
+
+    map.addLayer(newLayer);
+
+    // Fit the selection in the view
+    const feature = source.getFeatures()[0];
+    console.log('feature', feature);
+    const polygon = feature.getGeometry();
+    const view = map.getView();
+    view.fit(polygon, {padding: [20, 20, 20, 20]});
+    return newLayer;
 };
 
 /**
@@ -464,6 +519,7 @@ export {
     pad2, getSeparatedTimeUnits, formatTimecode, parseTimecode,
     capitalizeFirstLetter, formatDay, getAssetType,
     handleBrokenImage, getCoordStyles, transform,
+    displaySelection,
     getPlayerTime, getCourseUrl,
     groupByAuthor, groupByTag, getTagName
 };
