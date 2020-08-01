@@ -1,18 +1,18 @@
 {% load user_projects %}
 <div class="table-responsive">
-    <table class="table table-bordered table-striped w-100">
-        <thead class="thead-darkgray">
+    <table class="table table-sm w-100 tablesorter">
+        <thead class="bg-light">
             <th>
-                Due Date
+                Action
             </th>
             <th>
                 Title
             </th>
             <th>
-                Response Status
+                Due Date
             </th>
             <th>
-                Action
+                Response Status
             </th>
             <th>
                 Type
@@ -35,6 +35,27 @@
                     {% with response=response_collaboration.content_object %}
                     <tr>
                         <td>
+                            {% if response.feedback_discussion %}
+                                <a class="btn btn-sm btn-info"
+                                    href="{% url 'project-workspace' request.course.id response.id %}" title="{{response.title}}">
+                                    View Feedback
+                                </a>
+                            {% else %}{% if response.is_submitted %}
+                                <a class="btn btn-sm btn-secondary btn-block"
+                                    href="{% url 'project-workspace' request.course.id response.id %}" title="{{response.title}}">
+                                    View Response
+                                </a>
+                            {% else %}
+                                <a class="btn btn-sm btn-success"
+                                    href="{% url 'project-workspace' request.course.id response.id %}" title="{{response.title}}">
+                                    Edit Response
+                                </a>
+                            {% endif %}{% endif %}
+                        </td>
+                        <td>
+                            {{object.title}}
+                        </td>
+                        <td>
                             {% if object.due_date %}
                                 {{object.due_date|date:"n/j/y"}}<br />
                                 {% if not response.is_submitted %}
@@ -55,33 +76,12 @@
                             {% endif %}
                         </td>
                         <td>
-                            {{object.title}}
-                        </td>
-                        <td>
                             {% if response.is_submitted %}
                                 <div>Submitted {{response.date_submitted|date:"n/j/y g:iA"}}</div>
                                 <div>{{response.visibility_short}}</div>
                             {% else %}
                                 {{response.visibility_short}}
                             {% endif %}
-                        </td>
-                        <td>
-                            {% if response.feedback_discussion %}
-                                <a class="btn btn-sm btn-primary btn-block"
-                                    href="{% url 'project-workspace' request.course.id response.id %}" title="{{response.title}}">
-                                    View Feedback
-                                </a>
-                            {% else %}{% if response.is_submitted %}
-                                <a class="btn btn-sm btn-secondary btn-block"
-                                    href="{% url 'project-workspace' request.course.id response.id %}" title="{{response.title}}">
-                                    View Response
-                                </a>
-                            {% else %}
-                                <a class="btn btn-sm btn-primary btn-block"
-                                    href="{% url 'project-workspace' request.course.id response.id %}" title="{{response.title}}">
-                                    Edit Response
-                                </a>
-                            {% endif %}{% endif %}
                         </td>
                         <td>
                             {{object.description}}
@@ -97,6 +97,15 @@
                     Student has not yet created a response
                 {% endcomment %}
                 <tr>
+                    <td>
+                        <form action="{% url 'project-create' request.course.id %}" method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="parent" value="{{object.id}}">
+                            <input type="hidden" name="project_type" value="composition">
+                            <input type="hidden" name="title" value="My Response">
+                            <button class="btn btn-sm btn-success" type="submit">Add Response</button>
+                        </form>
+                    </td>
                     <td>
                         {% if object.due_date %}
                             {{object.due_date|date:"n/j/y"}}<br />
@@ -122,6 +131,7 @@
                         No Response Yet
                     </td>
                     <td>
+<<<<<<< Updated upstream
                         <form action="{% url 'project-create' request.course.id %}" method="post">
                             <input type="hidden" name="parent" value="{{object.id}}">
                             <input type="hidden" name="project_type" value="composition">
@@ -130,6 +140,8 @@
                         </form>
                     </td>
                     <td>
+=======
+>>>>>>> Stashed changes
                         {{object.description}}
                     </td>
                     <td>

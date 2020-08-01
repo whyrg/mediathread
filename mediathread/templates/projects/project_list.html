@@ -141,26 +141,46 @@ Projects
                     <div class="col-12">
                         {% if object_list.exists %}
                             <div class="table-responsive">
-                                <table class="table table-bordered table-striped w-100 tablesorter">
-                                    <thead class="thead-darkgray">
+                                <table class="table table-sm w-100 tablesorter">
+                                    <thead class="bg-light">
                                         <th data-sort-by="title"
                                             class="sortable {% if sortby == 'title' %}{{direction}}{% endif %}">
                                             Title
+                                            {% if sortby == "title" %}
+                                                <img src="{{STATIC_URL}}/img/sortable/{{direction}}.gif" alt="Click to sort by title" />
+                                            {% else %}
+                                                <img src="{{STATIC_URL}}/img/sortable/bg.gif" alt="Click to sort by title" />
+                                            {% endif %}
                                         </th>
-                                        <th data-sort-by="visibility">
+                                        <th>
                                             Status
                                         </th>
                                         <th data-sort-by="full_name"
                                             class="sortable {% if sortby == 'full_name' %}{{direction}}{% endif %}">
                                             Authors
+                                            {% if sortby == "full_name" %}
+                                                <img src="{{STATIC_URL}}/img/sortable/{{direction}}.gif" alt="Click to sort by author" />
+                                            {% else %}
+                                                <img src="{{STATIC_URL}}/img/sortable/bg.gif" alt="Click to sort by author" />
+                                            {% endif %}
                                         </th>
                                         <th data-sort-by="project_type"
                                             class="sortable {% if sortby == 'project_type' %}{{direction}}{% endif %}">
                                             Type
+                                            {% if sortby == "project_type" %}
+                                                <img src="{{STATIC_URL}}/img/sortable/{{direction}}.gif" alt="Click to sort by assignment type" />
+                                            {% else %}
+                                                <img src="{{STATIC_URL}}/img/sortable/bg.gif" alt="Click to sort by assignment type" />
+                                            {% endif %}
                                         </th>
                                         <th data-sort-by="modified"
                                             class="sortable {% if sortby == 'modified' %}{{direction}}{% endif %}">
                                             Last Updated
+                                            {% if sortby == "modified" %}
+                                                <img src="{{STATIC_URL}}/img/sortable/{{direction}}.gif" alt="Click to sort by last updated" />
+                                            {% else %}
+                                                <img src="{{STATIC_URL}}/img/sortable/bg.gif" alt="Click to sort by last updated" />
+                                            {% endif %}
                                         </th>
                                         <th>
                                             Action

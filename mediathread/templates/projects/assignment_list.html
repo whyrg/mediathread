@@ -140,6 +140,7 @@ Assignments
                 $frm.find('[name="direction"]').val(direction);
                 $frm.find('[name="sortby"]').val(sortBy);
                 $frm.submit();
+                return false;
             });
             jQuery('a.page-link').on('click', (evt) => {
                 const $frm = jQuery('#search-form');

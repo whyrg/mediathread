@@ -4296,27 +4296,9 @@ ul.section-tabs>li>a.active {
     }
 }
 
-.table .thead-darkgray th {
-    color: rgba(33,37,41);
-    font-weight: 700;
-    background-color: #cccccc;
-    border-color: #cccccc;
-    vertical-align: middle;
-}
-
-.table th.sortable {
-    background-image: url(../img/sortable/bg.gif);
-    background-repeat: no-repeat;
-    background-position: center right;
+.table thead th.sortable {
     cursor: pointer;
-}
-
-.table th.sortable.asc {
-    background-image: url(../img/sortable/asc.gif);
-}
-
-.table th.sortable.desc {
-    background-image: url(../img/sortable/desc.gif);
+    font-weight: 600;
 }
 
 #selectionsAccordion .card-header {
