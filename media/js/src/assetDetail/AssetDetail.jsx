@@ -1164,12 +1164,6 @@ export default class AssetDetail extends React.Component {
                     zoom: 1
                 })
             });
-            if (sId) {
-                const selection = find(this.props.asset.annotations, {
-                    id: sId
-                });
-                this.onViewSelection(null, selection);
-            }
         } else if (this.type === 'pdf') {
             window.onmessage = function(e) {
                 if (
@@ -1179,6 +1173,23 @@ export default class AssetDetail extends React.Component {
                     me.setState({pdfRect: e.data.rect});
                 }
             };
+        }
+
+        if ((this.type === 'image' || this.type === 'pdf') && sId) {
+            const selection = find(this.props.asset.annotations, {
+                id: sId
+            });
+
+            if (this.type === 'pdf') {
+                const $iframe = window.jQuery('iframe.pdfjs');
+                if ($iframe) {
+                    $iframe.on('load', function() {
+                        me.onViewSelection(null, selection);
+                    });
+                }
+            } else if (this.type === 'image') {
+                this.onViewSelection(null, selection);
+            }
         }
     }
 

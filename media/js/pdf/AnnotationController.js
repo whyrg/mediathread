@@ -86,11 +86,13 @@ export default class AnnotationController {
     getSVG() {
         const pageEl = document.querySelector(
             '.page[data-page-number="' + this.page + '"]');
+
         const svg = pageEl.querySelector('svg');
 
         const draw = SVG(svg).addTo('#pdfjs-page-' + this.page);
 
         return draw;
+
     }
 
     makeRect(x, y, width, height) {

@@ -76,6 +76,8 @@ window.onmessage = function(e) {
             return;
         }
 
+        console.log('viewing!', e.data);
+
         const page = parseInt(e.data.page);
         annotationController.page = page;
         annotationController.rect = {
