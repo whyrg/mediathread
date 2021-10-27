@@ -30,3 +30,6 @@ cypress/videos
 cypress/screenshots
 cypress/fixtures
 celerybeat-schedule
+package-lock.json
+package.json
+requirements.txt

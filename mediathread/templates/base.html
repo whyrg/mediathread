@@ -165,13 +165,6 @@
                                     <a href="/accounts/logout/?next=/">Log Out</a>
                                 </div>
                             </li>
-                        {% else %}
-                            <li><div unselectable="on"><a href="/kb/">Help</a></div></li>
-                            {% if request.user.is_authenticated %}
-                                <li><a href="/accounts/logout/?next=/">Log Out</a></li>
-                            {% else %}
-                                <li><a href="/accounts/login/">Log In</a></li>
-                            {% endif %}
                         {% endif %}
                     </ul>
                 {% endblock %}
@@ -221,25 +214,6 @@
         </div><!-- id="pagebody" -->
         {% endblock %}
     </div><!-- id="container" -->
-
-    {% block footer %}
-        <!-- ###### Footer ###### -->
-        <div id="footer">
-
-            <!-- CTL title/logo -->
-            <a id="logo_ctl" href="https://ctl.columbia.edu" target="_blank" title="Columbia Center for Teaching and Learning">
-                <img width="160" height="29.6"
-                     src="{% static 'img/logo_ctl.png' %}" alt="CTL Logo">
-                <span class="sr-only">Visit ctl.columbia.edu</span>
-            </a>
-
-           <ol id="footernav">
-               <li><a href="https://mediathread.info" target="_blank">About</a></li>
-               <li><a href="/contact/">Contact Us</a></li>
-               <li><a href="/kb/">Help</a></li>
-            </ol>
-        </div><!-- id="footer" -->
-    {% endblock %}
 
     {% block collection-modal %}
         {% if request.user.is_authenticated %}
