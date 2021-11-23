@@ -39,7 +39,7 @@ class SherdNoteResource(ModelResource):
     def dehydrate(self, bundle):
         try:
             bundle.data['is_global_annotation'] = \
-                bundle.obj.is_global_annotation()
+                bundle.obj.is_global_annotation
             bundle.data['asset_id'] = str(bundle.obj.asset.id)
             bundle.data['is_null'] = bundle.obj.is_null()
             bundle.data['annotation'] = bundle.obj.annotation()
@@ -60,9 +60,12 @@ class SherdNoteResource(ModelResource):
                 'body': bundle.obj.body.strip() if bundle.obj.body else '',
                 'primary_type': bundle.obj.asset.primary.label,
                 'modified': modified,
-                'timecode': bundle.obj.range_as_timecode(),
                 'title': bundle.obj.title
             }
+
+            if bundle.obj.asset.media_type() == 'video':
+                bundle.data['metadata']['timecode'] = \
+                    bundle.obj.range_as_timecode()
 
             editable = (bundle.request.user.id ==
                         getattr(bundle.obj, 'author_id', -1))

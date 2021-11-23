@@ -510,7 +510,7 @@ def annotation_save(request, asset_id, annot_id):
                                     asset=asset_id,
                                     asset__course=request.course)
 
-        if (ann.is_global_annotation() and
+        if (ann.is_global_annotation and
             'asset-title' in request.POST and
                 (request.user.is_staff or request.user == ann.asset.author)):
             ann.asset.title = request.POST.get('asset-title')
@@ -641,7 +641,7 @@ def final_cut_pro_xml(request, asset_id):
         keys.sort(key=lambda x: int(x))
         for key in keys:
             ann = asset.sherdnote_set.get(id=request.POST.get(key),
-                                          range1__isnull=False)
+                                          is_global_annotation=False)
             if ann:
                 clip = the_video.clip(ann.range1, ann.range2, units='seconds')
                 clips.append(clip)
@@ -1127,7 +1127,8 @@ class AssetDetailView(LoggedInCourseMixin, RestrictedMaterialsMixin,
             return HttpResponseForbidden("forbidden")
 
         # only return original author's global annotations
-        notes = notes.exclude(~Q(author=request.user), range1__isnull=True)
+        notes = notes.exclude(~Q(author=request.user),
+                              is_global_annotation=True)
 
         asset = the_assets[0]
         if asset.primary.is_image():
@@ -1157,8 +1158,23 @@ class ReactAssetDetailView(LoggedInCourseMixin, DetailView):
 
     def get_context_data(self, **kwargs):
         context = super(ReactAssetDetailView, self).get_context_data(**kwargs)
+
+        # From main.views.CourseDetailView.get_context_data()
+        qs = ExternalCollection.objects.filter(course=self.request.course)
+        collections = qs.filter(uploader=False).order_by('title')
+        uploader = qs.filter(uploader=True).first()
+
+        can_upload = course_details.can_upload(
+            self.request.user, self.request.course) and uploader is not None
+        can_upload_image = course_details.can_upload_image(
+            self.request.user, self.request.course)
+
         context.update({
-            'course': self.request.course
+            'course': self.request.course,
+            'collections': collections,
+            'uploader': uploader,
+            'can_upload': can_upload,
+            'can_upload_image': can_upload_image,
         })
         return context
 

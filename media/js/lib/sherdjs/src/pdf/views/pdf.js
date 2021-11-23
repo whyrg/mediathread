@@ -1,7 +1,7 @@
 /* global Sherd: true*/
 
 import {
-    convertPointsToXYWH, renderPage
+    pdfjsScale, drawAnnotation, renderPage
 } from '../../../../../pdf/utils.js';
 
 const PdfJS = function() {
@@ -80,7 +80,9 @@ const PdfJS = function() {
             height: function(obj, presenter) {
                 return Sherd.winHeight();
             },
-            width: function(obj, presenter) { return '100%'; },
+            width: function(obj, presenter) {
+                return '100%';
+            },
             initialize: function(obj, presenter) {
                 console.log('pdf default init');
             },
@@ -143,35 +145,41 @@ const PdfJS = function() {
     };
 
     // Called on initialization
-    this.setState = function(obj) {
+    this.setState = function(annotation=null) {
+        // Handle weird case where annotation is passed in, but not at
+        // the right level.
+        if (annotation && annotation.annotation) {
+            annotation = annotation.annotation;
+        }
+
         const top = document.getElementById(self.current_obj.htmlID);
         const canvasEl = top.querySelector('canvas');
         const presentation = self.getPresentation(self.current_obj);
 
         // If page number isn't present, fall back to page 1.
-        const pageNumber = (obj.geometry && obj.geometry.page) ?
-              obj.geometry.page : 1;
+        const pageNumber =
+              (annotation && annotation.geometry && annotation.geometry.page) ?
+              annotation.geometry.page : 1;
 
         self.pdfLoadingTask.promise.then(function(pdf) {
             pdf.getPage(pageNumber).then(function(page) {
-                const [renderTask, scale] =
-                      renderPage(page, canvasEl, presentation.height());
-
-                self.svgDraw = SVG().addTo('.sherd-pdfjs-view')
-                    .size(canvasEl.width, canvasEl.height);
-
-                const [x, y, width, height] = convertPointsToXYWH(
-                    obj.geometry.coordinates[0][0],
-                    obj.geometry.coordinates[0][1],
-                    obj.geometry.coordinates[1][0],
-                    obj.geometry.coordinates[1][1],
-                    0.75 * scale
+                const [renderTask, scale, offsetX, offsetY] = renderPage(
+                    page, canvasEl,
+                    presentation.width(), presentation.height(),
+                    annotation
                 );
 
-                self.svgDraw.rect(width, height)
-                    .move(x, y)
-                    .stroke({color: '#22f', width: 2})
-                    .fill('none');
+                const selector = self.wrapperID ?
+                    '#' + self.wrapperID : '.sherd-pdfjs-view';
+
+                if (annotation) {
+                    // Append <svg> element next to the <canvas>
+                    self.svgDraw = SVG().addTo(selector)
+                        .size(canvasEl.width, canvasEl.height);
+
+                    drawAnnotation(
+                        self.svgDraw, annotation, scale, offsetX, offsetY);
+                }
             });
         });
     };
@@ -179,7 +187,11 @@ const PdfJS = function() {
     this.microformat = {};
     this.microformat.create = function(obj, doc, options) {
         var wrapperID = Sherd.Base.newID('pdfjs-wrapper');
-        ///TODO:zoom-levels might be something more direct on the object?
+        self.wrapperID = wrapperID;
+
+        ///TODO:zoom-levels might be something more direct on the
+        ///object?
+
         if (!obj.options) {
             obj.options = {};
         }
@@ -189,7 +201,6 @@ const PdfJS = function() {
             htmlID: wrapperID,
             text: '<div id="' + wrapperID +
                 '" class="sherd-pdfjs-view">' +
-                //'<svg class="pdf-svg"></svg>' +
                 '<canvas></canvas>' +
                 '</div>',
             winHeight: options &&
@@ -235,7 +246,6 @@ const PdfJS = function() {
 
     this.queryformat = {
         find: function(str) {
-            console.log('queryformat find', str);
             var xywh = String(str).match(/xywh=((\w+):)?([.\d]+),([.\d]+),([.\d]+),([.\d]+)/);
             if (xywh !== null) {
                 var ann = {
