@@ -51,7 +51,8 @@ const renderPage = function(page, canvas, width, height, annotation=null) {
     // canvas container's width and use that to constrain the PDF
     // view.
     if (!width || typeof width !== 'number') {
-        width = jQuery(canvas).closest('.sherd-pdfjs-view').width();
+        width = jQuery(canvas).closest(
+            '.sherd-pdfjs-view,.pdf-container').width();
     }
 
     // Get unmodified viewport for reference
@@ -127,6 +128,12 @@ const renderPage = function(page, canvas, width, height, annotation=null) {
 const drawAnnotation = function(
     svgDraw, annotation, scale=1, offsetX=0, offsetY=0
 ) {
+    // Handle weird case where annotation is passed in, but not at
+    // the right level.
+    if (annotation && annotation.annotation) {
+        annotation = annotation.annotation;
+    }
+
     if (
         !annotation || !annotation.geometry ||
             !annotation.geometry.coordinates
