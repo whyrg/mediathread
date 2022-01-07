@@ -1,12 +1,15 @@
 # pylint: disable-msg=R0904
 import json
 import time
+import re
+from django.conf import settings
 from django.urls import reverse
 from mediathread.api import ClassLevelAuthentication, UserResource
 from mediathread.assetmgr.models import Asset, Source
 from mediathread.djangosherd.api import SherdNoteResource
 from tastypie import fields
 from tastypie.resources import ModelResource
+from panopto.session import PanoptoSessionManager
 
 
 def add_note_ctx_to_json(note_ctx, the_json):
@@ -57,6 +60,23 @@ class AssetResource(ModelResource):
 
     def dehydrate(self, bundle):
         bundle.data['thumb_url'] = bundle.obj.thumb_url
+        if bundle.obj.primary.label == 'video':
+            session_mgr = PanoptoSessionManager(
+                getattr(settings, 'PANOPTO_SERVER', None),
+                getattr(settings, 'PANOPTO_API_USER', None),
+                instance_name=getattr(settings, 'PANOPTO_INSTANCE_NAME', None),
+                password=getattr(settings, 'PANOPTO_API_PASSWORD', None),
+                cache_dir=getattr(settings, 'ZEEP_CACHE_DIR', None))
+            url = bundle.obj.primary.url
+            res = re.search(r'.*\/(.*)\?', url)
+            if res:
+                panopto_id = res.group(1)[0:36]
+                thumb_url = session_mgr.get_thumb_url(panopto_id)
+                if thumb_url is not None:
+                    full_thumb_url = 'https://{}{}'.format(
+                        getattr(settings, 'PANOPTO_SERVER', None), thumb_url)
+                    bundle.data['thumb_url'] = full_thumb_url
+
         bundle.data['primary_type'] = bundle.obj.primary.label
 
         if bundle.obj.primary.upload:
