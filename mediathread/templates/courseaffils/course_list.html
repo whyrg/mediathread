@@ -36,6 +36,7 @@
 
 {% block content %}
 
+    <div style="display:none">
     {% if semester_view == 'past' %}
         <h2>Past Courses</h2>
     {% elif semester_view == 'current' %}
@@ -45,6 +46,7 @@
     {% elif semester_view == 'sandbox' %}
         <h2>Sandbox Courses</h2>
     {% endif %}
+    </div>
 
     <div id="course-list">
         <div class="row">
