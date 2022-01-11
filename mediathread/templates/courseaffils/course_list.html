@@ -36,6 +36,7 @@
 
 {% block content %}
 
+    <div style="display:none">
     {% if semester_view == 'past' %}
         <h2>Past Courses</h2>
     {% elif semester_view == 'current' %}
@@ -45,11 +46,12 @@
     {% elif semester_view == 'sandbox' %}
         <h2>Sandbox Courses</h2>
     {% endif %}
+    </div>
 
     <div id="course-list">
         <div class="row">
             <div class="col-md-7">
-                <div class="btn-group mb-3" style="display:block" role="group" aria-label="Select timeframe">
+                <div class="btn-group mb-3" style="display:none" role="group" aria-label="Select timeframe">
                     <a id="pastsemesters"
                         class="btn btn-outline-primary {% if semester_view == 'past' %}active{% endif %}"
                            href="?semester_view=past">
