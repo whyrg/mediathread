@@ -52,6 +52,16 @@ import re
 from sentry_sdk import capture_exception
 from s3sign.views import SignS3View
 
+import uuid
+import boto3
+import tempfile
+import time
+from panopto.session import PanoptoSessionManager
+from panopto.upload import PanoptoUpload, PanoptoUploadStatus
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 try:
     from urllib.request import urlopen
@@ -615,6 +625,122 @@ class RedirectToUploaderView(LoggedInCourseMixin, View):
 
         return HttpResponseRedirect(url)
 
+class PanoptoUploaderView(LoggedInCourseMixin, View):        
+    def panopto_upload(self, video_title, folder, input_file, extension):
+        uploader = PanoptoUpload()
+        uploader.server = settings.PANOPTO_SERVER
+        uploader.folder = folder
+        uploader.username = settings.PANOPTO_API_USER
+        uploader.password = settings.PANOPTO_API_PASSWORD
+        uploader.input_file = input_file
+        uploader.title = video_title
+        uploader.dest_filename = '{}.{}'.format(uuid.uuid4(), extension)
+        
+        if not uploader.create_session():
+            logger.error('Failed to create a Panopto upload session')
+            return None
+
+        uploader.create_bucket()
+        logger.debug('Upload bucket created')
+
+        uploader.upload_manifest()
+        logger.debug('Manifest uploaded')
+
+        uploader.upload_media()
+        logger.debug('Media file uploaded')
+
+        if not uploader.complete_session():
+            logger.error('Panopto complete session failed')
+            return None
+
+        logger.debug('Panopto upload completed')
+        return uploader    
+
+    def pull_from_s3(self, suffix, key):
+        s3 = boto3.resource(
+            's3', aws_access_key_id=settings.AWS_ACCESS_KEY,
+            aws_secret_access_key=settings.AWS_SECRET_KEY)
+        bucket = s3.Bucket(settings.AWS_S3_UPLOAD_BUCKET)
+        k = bucket.Object(key)
+        
+        t = tempfile.NamedTemporaryFile(suffix=suffix)
+        k.download_fileobj(t)
+        t.seek(0)
+        return t
+        
+    def verify_upload_to_panopto(self, upload_id):
+        verified = False
+        while not verified:
+            upload_status = PanoptoUploadStatus()
+            upload_status.server = settings.PANOPTO_SERVER
+            upload_status.username = settings.PANOPTO_API_USER
+            upload_status.password = settings.PANOPTO_API_PASSWORD
+            upload_status.upload_id = upload_id
+                
+            (state, panopto_id) = upload_status.check()
+            if state != 4:  # Panopto "Complete" State
+                logger.debug('Panopto has not yet finished...')
+                continue
+             
+            verified = True
+        return panopto_id
+    
+    def pull_thumb_from_panopto(self, panopto_id):
+        session_mgr = PanoptoSessionManager(
+            settings.PANOPTO_SERVER, settings.PANOPTO_API_USER,
+            instance_name=settings.PANOPTO_INSTANCE_NAME,
+            password=settings.PANOPTO_API_PASSWORD,
+            cache_dir=getattr(settings, 'ZEEP_CACHE_DIR', None))
+        
+        thumb_url = session_mgr.get_thumb_url(panopto_id)
+        
+        while not thumb_url or 'no_thumbnail' in thumb_url:
+            logger.debug('Panopto thumbnail has not yet ready...')
+            thumb_url = session_mgr.get_thumb_url(panopto_id)
+
+        url = 'https://{}{}'.format(settings.PANOPTO_SERVER, thumb_url)
+        return url
+        
+    def create_panopto_asset(self, request, title, uuid, thumb_url):
+        author = request.user
+        course = request.course
+        asset = Asset.objects.create(
+            course=course, title=title, author=author)
+        asset.global_annotation(author, True)
+
+        Source.objects.create(
+            asset=asset, url=uuid,
+            primary=True,
+            label='mp4_panopto')
+            
+        Source.objects.create(
+            asset=asset, url=thumb_url,
+            primary=False,
+            label='thumb')    
+
+    def post(self, request, *args, **kwargs):
+        suffix = 'mp4'
+        title = request.POST.get('title').strip()
+        url = request.POST.get('url')
+        s3_key = url.split(settings.S3_PRIVATE_STORAGE_BUCKET_NAME + '/')[1]
+        
+        tmp = self.pull_from_s3(
+            suffix, s3_key)
+        
+        # the pull_from_s3 returns an open file pointer. Wait to close it
+        # until the pypanopto library reads it
+        uploader = self.panopto_upload(title, settings.PANOPTO_UPLOAD_ID, tmp.name, suffix)
+        
+        tmp.close()
+        
+        panopto_id = self.verify_upload_to_panopto(uploader.target.upload_id)
+        thub_url = self.pull_thumb_from_panopto(panopto_id)
+        self.create_panopto_asset(request, title, panopto_id, thub_url)
+        
+        redirect_url = request.POST.get(
+            'redirect-url',
+            reverse('course_detail', args=[request.course.pk]))
+        return HttpResponseRedirect(redirect_url)
 
 def final_cut_pro_xml(request, asset_id):
     if not request.user.is_staff:

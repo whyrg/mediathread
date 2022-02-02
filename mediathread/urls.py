@@ -23,6 +23,7 @@ from mediathread.assetmgr.views import (
     AssetDetailView, ReactAssetDetailView,
     TagCollectionView,
     RedirectToExternalCollectionView, RedirectToUploaderView,
+    PanoptoUploaderView,
     AssetCreateView, BookmarkletMigrationView, AssetUpdateView)
 from mediathread.main.forms import CustomRegistrationForm
 from mediathread.main.views import (
@@ -261,6 +262,10 @@ urlpatterns = [
     path('upload/redirect/<int:collection_id>/',
          RedirectToUploaderView.as_view(),
          name='uploader_redirect'),
+         
+    path('upload/panopto/',
+         PanoptoUploaderView.as_view(),
+         name='uploader_panopto'),        
 
     path('impersonate/', include('impersonate.urls')),
 
