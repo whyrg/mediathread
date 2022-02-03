@@ -624,7 +624,9 @@ class RedirectToUploaderView(LoggedInCourseMixin, View):
 
         return HttpResponseRedirect(url)
 
+
 class PanoptoUploaderView(LoggedInCourseMixin, View):
+
     def panopto_upload(self, video_title, folder, input_file, extension):
         uploader = PanoptoUpload()
         uploader.server = settings.PANOPTO_SERVER
@@ -728,7 +730,8 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
 
         # the pull_from_s3 returns an open file pointer. Wait to close it
         # until the pypanopto library reads it
-        uploader = self.panopto_upload(title, settings.PANOPTO_UPLOAD_ID, tmp.name, suffix)
+        uploader = self.panopto_upload(
+            title, settings.PANOPTO_UPLOAD_ID, tmp.name, suffix)
 
         tmp.close()
 
@@ -740,6 +743,7 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
             'redirect-url',
             reverse('course_detail', args=[request.course.pk]))
         return HttpResponseRedirect(redirect_url)
+
 
 def final_cut_pro_xml(request, asset_id):
     if not request.user.is_staff:
