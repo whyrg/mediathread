@@ -262,10 +262,10 @@ urlpatterns = [
     path('upload/redirect/<int:collection_id>/',
          RedirectToUploaderView.as_view(),
          name='uploader_redirect'),
-         
+
     path('upload/panopto/',
          PanoptoUploaderView.as_view(),
-         name='uploader_panopto'),        
+         name='uploader_panopto'),
 
     path('impersonate/', include('impersonate.urls')),
 
