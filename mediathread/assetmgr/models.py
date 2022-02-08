@@ -403,8 +403,8 @@ class Source(models.Model):
         if s3_private_bucket in self.url:
             return get_signed_s3_url(
                 self.url, s3_private_bucket,
-                settings.AWS_ACCESS_KEY,
-                settings.AWS_SECRET_KEY)
+                settings.AWS_ACCESS_KEY_ID,
+                settings.AWS_SECRET_ACCESS_KEY)
 
         if self.upload:
             return self.upload.url
@@ -419,8 +419,8 @@ class Source(models.Model):
         if s3_private_bucket in self.url:
             return get_signed_s3_url(
                 self.url, s3_private_bucket,
-                settings.AWS_ACCESS_KEY,
-                settings.AWS_SECRET_KEY)
+                settings.AWS_ACCESS_KEY_ID,
+                settings.AWS_SECRET_ACCESS_KEY)
 
         url_processor = getattr(settings, 'ASSET_URL_PROCESSOR')
         return url_processor(self.url, self.label, request)
