@@ -723,7 +723,7 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
         suffix = 'mp4'
         title = request.POST.get('title').strip()
         url = request.POST.get('url')
-        s3_key = url.split(settings.S3_PRIVATE_STORAGE_BUCKET_NAME + '/')[1]
+        s3_key = url.split(settings.AWS_STORAGE_BUCKET_NAME + '/')[1]
 
         tmp = self.pull_from_s3(
             suffix, s3_key)
