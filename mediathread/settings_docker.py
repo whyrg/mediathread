@@ -19,7 +19,7 @@ DB_USER = os.environ.get('DB_USER', '')
 DB_PASSWORD = os.environ.get('DB_PASSWORD', '')
 
 AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN', '')
-S3_PRIVATE_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
 AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY', None)
 AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_KEY', None)
 

@@ -1502,5 +1502,5 @@ class S3SignView(SignS3View):
     def get_bucket(self):
         return getattr(
             settings,
-            'S3_PRIVATE_STORAGE_BUCKET_NAME',
+            'AWS_STORAGE_BUCKET_NAME',
             'mediathread-private-uploads')

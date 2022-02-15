@@ -15,7 +15,7 @@ class S3PrivateStorage(S3Boto3Storage):
         super(S3PrivateStorage, self).__init__()
         self.bucket_name = getattr(
             settings,
-            'S3_PRIVATE_STORAGE_BUCKET_NAME',
+            'AWS_STORAGE_BUCKET_NAME',
             'mediathread-private-uploads')
 
 

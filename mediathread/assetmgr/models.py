@@ -398,7 +398,7 @@ class Source(models.Model):
     def signed_url(self):
         s3_private_bucket = getattr(
             settings,
-            'S3_PRIVATE_STORAGE_BUCKET_NAME',
+            'AWS_STORAGE_BUCKET_NAME',
             'mediathread-private-uploads')
         if s3_private_bucket in self.url:
             return get_signed_s3_url(
@@ -414,7 +414,7 @@ class Source(models.Model):
     def url_processed(self, request):
         s3_private_bucket = getattr(
             settings,
-            'S3_PRIVATE_STORAGE_BUCKET_NAME',
+            'AWS_STORAGE_BUCKET_NAME',
             'mediathread-private-uploads')
         if s3_private_bucket in self.url:
             return get_signed_s3_url(
