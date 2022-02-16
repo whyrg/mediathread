@@ -101,4 +101,5 @@ PANOPTO_SERVER=os.environ.get('PANOPTO_SERVER','')
 PANOPTO_API_USER=os.environ.get('PANOPTO_USER','')
 PANOPTO_INSTANCE_NAME=os.environ.get('PANOPTO_INSTANCE','')
 PANOPTO_API_PASSWORD=os.environ.get('PANOPTO_PASSWORD','')
+PANOPTO_UPLOAD_ID=os.environ.get('PANOPTO_UPLOAD_ID', None)
 EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
