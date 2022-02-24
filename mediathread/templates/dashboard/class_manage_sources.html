@@ -75,38 +75,6 @@
     </div>
 </div>
 
-<div class="card bg-light mb-3">
-    <div class="card-body">
-        <h3 card-title>Add Your Own Source</h3>
-        <p class="card-text">Feel free to experiment with the Mediathread extension to see if it imports items from an "unsupported" website;
-        if it does, you may add this source to your class here. To request extension compatibility with an unsupported source,
-        please email {{settings.SERVER_EMAIL}}.
-
-        <form action="{% url 'collection-add-or-remove' %}" method="POST">
-            {% csrf_token %}
-            <div class="form-group">
-                <label>Collection Title</label>
-                <input class="form-control" type="text" name="title" value="" />
-            </div>
-            <div class="form-group">
-                <label>Collection URL</label>
-                <input class="form-control" type="text" name="url" value="" />
-            </div>
-            <div class="form-group">
-                <label>Thumb URL</label>
-                <input class="form-control" type="text" name="thumb" value="" />
-            </div>
-            <div class="form-group">
-                <label>Description</label><br />
-                <textarea class="form-control" cols="55" rows="5" name="description"></textarea>
-            </div>
-            <br /><br />
-            <input class="btn btn-dark right" type="submit" value="Add Source to Class" />
-            <div class="visualclear"></div>
-        </form>
-    </div>
-</div>
-
 {% if is_staff %}
 <div class="card bg-light mb-3">
     <div class="card-body">
