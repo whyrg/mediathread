@@ -419,6 +419,7 @@ class Source(models.Model):
         if s3_private_bucket in self.url:
             return get_signed_s3_url(
                 self.url, s3_private_bucket,
+                settings.AWS_REGION,
                 settings.AWS_ACCESS_KEY_ID,
                 settings.AWS_SECRET_ACCESS_KEY)
 

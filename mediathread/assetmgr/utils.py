@@ -3,9 +3,10 @@ import boto3
 from s3sign.utils import create_presigned_url, s3_config
 
 
-def get_signed_s3_url(url, bucket, aws_key, aws_secret):
+def get_signed_s3_url(url, bucket, aws_region, aws_key, aws_secret):
     s3_client = boto3.client(
         's3', config=s3_config,
+        region_name=aws_region,
         aws_access_key_id=aws_key,
         aws_secret_access_key=aws_secret)
 
