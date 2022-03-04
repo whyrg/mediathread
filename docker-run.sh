@@ -47,6 +47,6 @@ if [ "$1" == "run" ]; then
 		exec /ve/bin/gunicorn --env \
 				 DJANGO_SETTINGS_MODULE=$DJANGO_SETTINGS_MODULE \
 				 mediathread.wsgi:application -b 0.0.0.0:8000 -w 3 \
-				 --timeout 36000
+				 --timeout 36000 \
 				 --access-logfile=- --error-logfile=-
 fi
