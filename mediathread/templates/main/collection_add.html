@@ -36,6 +36,7 @@
                                             <div class="custom-file">
                                                 <input
                                                     type="file"
+                                                    accept=".avi, .mov, .mp3, .mp4"
                                                     onchange="s3_upload_video();"
                                                     class="custom-file-input"
                                                     id="mediaUploadFilename"/>
@@ -176,39 +177,57 @@
         });
     };
     
+    function clearForm() {
+        jQuery('#file-too-big').hide();
+        jQuery('#upload-button').attr('disabled', true);
+        jQuery('#newAssetTitle').val('');
+        jQuery('#newAssetTitle').attr('placeholder', 'Specify a title');
+        jQuery('#newAssetTitle').attr('disabled', true);
+    }
+
     function s3_upload_video() {
-        const s3upload = new S3Upload({
-            file_dom_selector: 'mediaUploadFilename',
-            x_amz_acl: '',
-            s3_sign_put_url: '/asset/sign_s3/',
-            s3_object_name: jQuery('#mediaUploadFilename')[0].value,
-            
-            onProgress: function(percent, message) {
-                jQuery('#upload-status')
-                    .removeClass('alert-danger')
-                    .text('Processing: ' + percent + '% ')
-                    .show();
-            },
-            onFinishS3Put: function(url, privateUrl) {
-                const urlObj = new URL(privateUrl);
-                // Save the URL without security credentials to the
-                // database.
-                jQuery('#uploaded-url').val(
-                    urlObj.origin + urlObj.pathname);
-                jQuery('#newAssetTitle').attr('disabled', false);
-                jQuery('#newAssetTitle').focus();
-                long_filename = jQuery('#mediaUploadFilename')[0].value
-                var media_upload_filename = long_filename.substring(long_filename.lastIndexOf('\\') + 1, long_filename.lastIndexOf('\.'))
-                jQuery('#newAssetTitle').val(media_upload_filename);
-                jQuery('#upload-button').attr('disabled', false);
-            },
-            onError: function(status) {
-                jQuery('#upload-status')
-                    .removeClass('alert-primary')
-                    .addClass('alert-danger')
-                    .text(status);
-            }
-        });
+        clearForm();
+
+        if (jQuery('#mediaUploadFilename')[0].files[0].size / 1024 / 1024 / 1024 > 2) {
+            jQuery('#file-too-big')
+            .addClass('alert-danger')
+            .text('A submitted video or audio file must be less than 2GB')
+            .show();;
+        }
+        else {
+            const s3upload = new S3Upload({
+                file_dom_selector: 'mediaUploadFilename',
+                x_amz_acl: '',
+                s3_sign_put_url: '/asset/sign_s3/',
+                s3_object_name: jQuery('#mediaUploadFilename')[0].value,
+
+                onProgress: function(percent, message) {
+                    jQuery('#upload-status')
+                      .removeClass('alert-danger')
+                      .text('Processing: ' + percent + '% ')
+                      .show();
+                },
+                onFinishS3Put: function(url, privateUrl) {
+                    const urlObj = new URL(privateUrl);
+                    // Save the URL without security credentials to the
+                    // database.
+                    jQuery('#uploaded-url').val(
+                        urlObj.origin + urlObj.pathname);
+                        jQuery('#newAssetTitle').attr('disabled', false);
+                        jQuery('#newAssetTitle').focus();
+                        long_filename = jQuery('#mediaUploadFilename')[0].value
+                        var media_upload_filename = long_filename.substring(long_filename.lastIndexOf('\\') + 1, long_filename.lastIndexOf('\.'))
+                        jQuery('#newAssetTitle').val(media_upload_filename);
+                        jQuery('#upload-button').attr('disabled', false);
+                    },
+                onError: function(status) {
+                    jQuery('#upload-status')
+                        .removeClass('alert-primary')
+                        .addClass('alert-danger')
+                        .text(status);
+                }
+            });
+        }
     }
     
     function show_loading(){
