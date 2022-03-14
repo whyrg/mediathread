@@ -214,10 +214,11 @@
                     jQuery('#uploaded-url').val(
                         urlObj.origin + urlObj.pathname);
                         jQuery('#newAssetTitle').attr('disabled', false);
-                        jQuery('#newAssetTitle').focus();
                         long_filename = jQuery('#mediaUploadFilename')[0].value
                         var media_upload_filename = long_filename.substring(long_filename.lastIndexOf('\\') + 1, long_filename.lastIndexOf('\.'))
                         jQuery('#newAssetTitle').val(media_upload_filename);
+                        jQuery('#newAssetTitle').focus();
+                        jQuery('#newAssetTitle').get(0).setSelectionRange(0,0);
                         jQuery('#upload-button').attr('disabled', false);
                     },
                 onError: function(status) {
