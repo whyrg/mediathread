@@ -204,6 +204,7 @@
                 onProgress: function(percent, message) {
                     jQuery('#upload-status')
                       .removeClass('alert-danger')
+                      .css({"color":"#666", "font-size":".85rem", "margin-top":"-1rem", "margin-bottom":"0.1rem"})
                       .text('Processing: ' + percent + '% ')
                       .show();
                 },
