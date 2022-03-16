@@ -59,6 +59,7 @@ from panopto.session import PanoptoSessionManager
 from panopto.upload import PanoptoUpload, PanoptoUploadStatus
 
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -671,16 +672,18 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
 
     def verify_upload_to_panopto(self, upload_id):
         verified = False
+        
+        upload_status = PanoptoUploadStatus()
+        upload_status.server = settings.PANOPTO_SERVER
+        upload_status.username = settings.PANOPTO_API_USER
+        upload_status.password = settings.PANOPTO_API_PASSWORD
+        upload_status.upload_id = upload_id
+        
         while not verified:
-            upload_status = PanoptoUploadStatus()
-            upload_status.server = settings.PANOPTO_SERVER
-            upload_status.username = settings.PANOPTO_API_USER
-            upload_status.password = settings.PANOPTO_API_PASSWORD
-            upload_status.upload_id = upload_id
-
             (state, panopto_id) = upload_status.check()
             if state != 4:  # Panopto "Complete" State
                 logger.debug('Panopto has not yet finished...')
+                time.sleep(5)
                 continue
 
             verified = True
@@ -1497,7 +1500,7 @@ class S3SignView(SignS3View):
     root = 'private/'
     acl = None
     expiration_time = 3600 * 8  # 8 hours
-    max_file_size = 2000000000  # 2gb
+    max_file_size = 2000000000  # 2GB
 
     def get_bucket(self):
         return getattr(
