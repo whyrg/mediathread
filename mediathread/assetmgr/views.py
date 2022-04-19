@@ -27,6 +27,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.http import require_http_methods, require_POST
 from django.views.generic import DetailView
 from django.views.generic.base import View, TemplateView
+
 import hmac
 import json
 from mediathread.api import UserResource, TagResource
@@ -60,6 +61,7 @@ from panopto.upload import PanoptoUpload, PanoptoUploadStatus
 
 import logging
 import time
+import threading
 
 logger = logging.getLogger(__name__)
 
@@ -672,13 +674,13 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
 
     def verify_upload_to_panopto(self, upload_id):
         verified = False
-        
+
         upload_status = PanoptoUploadStatus()
         upload_status.server = settings.PANOPTO_SERVER
         upload_status.username = settings.PANOPTO_API_USER
         upload_status.password = settings.PANOPTO_API_PASSWORD
         upload_status.upload_id = upload_id
-        
+
         while not verified:
             (state, panopto_id) = upload_status.check()
             if state != 4:  # Panopto "Complete" State
@@ -722,10 +724,12 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
             primary=False,
             label='thumb')
 
-    def post(self, request, *args, **kwargs):
+    def upload_to_panoto(self, request):
         suffix = 'mp4'
         title = request.POST.get('title').strip()
         url = request.POST.get('url')
+        logger.info("==================== upload_to_panoto thread starting: title=" + title + " ====================")
+
         s3_key = url.split(settings.AWS_STORAGE_BUCKET_NAME + '/')[1]
 
         tmp = self.pull_from_s3(
@@ -742,11 +746,19 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
         thub_url = self.pull_thumb_from_panopto(panopto_id)
         self.create_panopto_asset(request, title, panopto_id, thub_url)
 
+        logger.info('upload_to_panoto thread finished')
+
+    def post(self, request, *args, **kwargs):
+        try:
+            upload_thread = threading.Thread(target=self.upload_to_panoto, args=(request,))
+            upload_thread.start()
+        except:
+            logger.error('Error: unable to start thread')
+
         redirect_url = request.POST.get(
             'redirect-url',
             reverse('course_detail', args=[request.course.pk]))
         return HttpResponseRedirect(redirect_url)
-
 
 def final_cut_pro_xml(request, asset_id):
     if not request.user.is_staff:
