@@ -228,6 +228,12 @@ A new base.html without the course context overwritten in the template.
                     jQuery("div.settings_menu").removeClass("open").addClass("closed");
                     jQuery("a.switcher-top.menuopen").click();
                 });
+
+                setTimeout(function(){
+                  if (jQuery(".alert.alert-info.alert-dismissible.fade.show").length > 0) {
+                    jQuery(".alert.alert-info.alert-dismissible.fade.show").remove();
+                  }
+                }, 5000);
             });
             </script>
 

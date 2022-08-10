@@ -758,6 +758,7 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
         redirect_url = request.POST.get(
             'redirect-url',
             reverse('course_detail', args=[request.course.pk]))
+        messages.success(request, 'Your media file will take some time to upload. Please check back in a few hours.')
         return HttpResponseRedirect(redirect_url)
 
 def final_cut_pro_xml(request, asset_id):
