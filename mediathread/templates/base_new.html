@@ -113,12 +113,21 @@ A new base.html without the course context overwritten in the template.
                         {% block messages %}
                             {% if messages %}
                                 {% for message in messages %}
-                                    <div class="alert alert-info alert-dismissible fade show" role="alert">
-                                        {{ message|safe }}
-                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
-                                    </div>
+                                    {% if 'Your media file will take some time to upload. Please check back in a few hours.' in message.message %}
+                                        <div class="alert alert-info alert-dismissible fade show auto-close" role="alert">
+                                            {{ message|safe }}
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                            {{ message|safe }}
+                                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                    {% endif %}
                                 {% endfor %}
                             {% endif %}
                         {% endblock %}
@@ -230,8 +239,8 @@ A new base.html without the course context overwritten in the template.
                 });
 
                 setTimeout(function(){
-                  if (jQuery(".alert.alert-info.alert-dismissible.fade.show").length > 0) {
-                    jQuery(".alert.alert-info.alert-dismissible.fade.show").remove();
+                  if (jQuery(".alert.alert-info.alert-dismissible.fade.show.auto-close").length > 0) {
+                    jQuery(".alert.alert-info.alert-dismissible.fade.show.auto-close").remove();
                   }
                 }, 5000);
             });
