@@ -700,12 +700,11 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
 
         thumb_url = session_mgr.get_thumb_url(panopto_id)
 
-        while not thumb_url or 'no_thumbnail' in thumb_url:
+        while not thumb_url in thumb_url:
             logger.debug('Panopto thumbnail has not yet ready...')
             thumb_url = session_mgr.get_thumb_url(panopto_id)
 
-        url = 'https://{}{}'.format(settings.PANOPTO_SERVER, thumb_url)
-        return url
+        return thumb_url
 
     def create_panopto_asset(self, request, title, uuid, thumb_url):
         author = request.user
