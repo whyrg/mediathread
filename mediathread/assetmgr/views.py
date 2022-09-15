@@ -700,7 +700,7 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
 
         thumb_url = session_mgr.get_thumb_url(panopto_id)
 
-        while not thumb_url in thumb_url:
+        while not thumb_url or 'no_thumbnail' in thumb_url:
             logger.debug('Panopto thumbnail has not yet ready...')
             thumb_url = session_mgr.get_thumb_url(panopto_id)
 
