@@ -192,10 +192,7 @@ class ProjectDeleteView(LoggedInCourseMixin, ProjectEditableMixin, View):
         the project, an HttpResponseForbidden
         will be returned
         """
-        if self.project.is_assignment_type():
-            url = reverse('assignment-list', args=[request.course.pk])
-        else:
-            url = reverse('project-list', args=[request.course.pk])
+        url = reverse('assignment-list', args=[request.course.pk])
         collaboration = self.project.get_collaboration()
         collaboration.remove_children()
         self.project.delete()
