@@ -4368,3 +4368,8 @@ ul.selection-spinner {
 #uploaded-thumbnail.img-thumbnail {
     max-height: 200px;
 }
+
+.alert-info {
+    text-align: center;
+}
+
