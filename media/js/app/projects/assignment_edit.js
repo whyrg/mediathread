@@ -37,23 +37,27 @@
             return 'Changes to your assignment have not been saved.';
         },
         validate: function(pageContent) {
-            if (pageContent === 'title') {
-                var title = jQuery(this.el).find('input[name="title"]').val();
+            if (pageContent === 'assignment-title-form') {
+                var title = 'input[name="title"]';
+                if (jQuery(title).val() === undefined || jQuery(title).val() === '') {
+                    return false;
+                }
+            } else if (pageContent === 'assignment-instructions-form') {
                 if (this.tinymce) {
                     var body = this.tinymce.getContent();
                 }
-                return title.length > 0 && body.length > 0;
-            } else if (pageContent === 'due-date') {
-                var q1 = 'input[name="due_date"]';
-                if (jQuery(q1).val() === undefined || jQuery(q1).val() === '')
-                    return false;
-
-                var q2 = 'input[name="response_view_policy"]';
-                if (jQuery(q2).length &&
-                        jQuery(q2 + ':checked').val() === undefined) {
+                return body.length > 0;
+            } else if (pageContent === 'due-date-form') {
+                var due_date = 'input[name="due_date"]';
+                if (jQuery(due_date).val() === undefined || jQuery(due_date).val() === '') {
                     return false;
                 }
-                return true;
+            } else if (pageContent === 'response-view-policy-form') {
+                var response_view_policy = 'input[name="response_view_policy"]';
+                if (jQuery(response_view_policy).length &&
+                        jQuery(response_view_policy + ':checked').val() === undefined) {
+                    return false;
+                }
             } else if (pageContent === 'publish') {
                 var q = 'input[name="publish"]:checked';
                 return jQuery(q).val() !== undefined;
@@ -78,12 +82,56 @@
         },
         onNext: function(evt) {
             evt.preventDefault();
-
             var $current = jQuery('div[data-page="' + this.currentPage + '"]');
             var content = $current.data('page-content');
-            if (!this.validate(content)) {
-                $current.addClass('has-error');
-                return false;
+            
+            if (content === 'title') {
+                var error = false;
+                if (!this.validate('assignment-title-form')) {
+                    jQuery('div[name="assignment-title-form"]').addClass('has-error');
+                    error = true;
+                }
+                else {
+                    jQuery('div[name="assignment-title-form"]').removeClass('has-error');
+                }
+                if (!this.validate('assignment-instructions-form')) {
+                    jQuery('div[name="assignment-instructions-form"]').addClass('has-error');
+                    error = true;
+                }
+                else {
+                  jQuery('div[name="assignment-instructions-form"]').removeClass('has-error');
+                }
+                
+                if (error) {
+                    return false;
+                }
+            }
+            else if (content === 'due-date') {
+                var error = false;
+                if (!this.validate('due-date-form')) {
+                    jQuery('div[name="due-date-form"]').addClass('has-error');
+                    error = true;
+                  }
+                else {
+                    jQuery('div[name="due-date-form"]').removeClass('has-error');
+                }
+                if (!this.validate('response-view-policy-form')) {
+                    jQuery('div[name="response-view-policy-form"]').addClass('has-error');
+                    error = true;
+                }
+                else {
+                    jQuery('div[name="response-view-policy-form"]').removeClass('has-error');
+                }
+              
+                if (error) {
+                    return false;
+                }
+            }
+            else {
+                if (!this.validate(content)) {
+                    $current.addClass('has-error');
+                    return false;
+                }
             }
 
             $current.removeClass('has-error').addClass('hidden');

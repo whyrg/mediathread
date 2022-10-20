@@ -138,7 +138,7 @@
                             </div>
                             <div data-page="3" data-page-content="title" class="hidden page">
                                 <h4>2. Write title &amp; instructions</h4>
-                                <div class="form-group">
+                                <div name="assignment-title-form" class="form-group">
                                     <label for="assignment-title"><strong>Assignment Title</strong></label>
                                     <input type="text" name="title" class="form-control"
                                         placholder="Assignment Title"
@@ -146,7 +146,7 @@
                                         value="{% ifnotequal form.instance.title form.instance.DEFAULT_TITLE %}{{form.instance.title}}{% endifnotequal %}"/>
                                     <div class="help-inline">Title is a required field</div>
                                 </div>
-                                <div class="form-group">
+                                <div name="assignment-instructions-form" class="form-group">
                                     <label><strong>Assignment Instructions</strong></label>
                                     <div>Instructions to students could include:</div>
                                     <ul>
@@ -172,19 +172,19 @@
                             <div data-page="4" data-page-content="due-date" class="hidden page">
                                 <h4>3. Set response due date &amp; visibility</h4>
                                 <p></p>
-                                <div class="form-group">
+                                <div name="due-date-form" class="form-group">
                                     <label for="due_date"><strong>Due Date</strong></label>
                                     <input class="form-control" type="text" id="due_date"
                                         name="due_date" value="{{form.instance.due_date|date:'m/d/y'}}">
+                                    <div class="help-inline">Please choose a due date.</div>
                                 </div>
-                                <div class="help-inline">Please choose a due date.</div>
                                 <br />
                                 <label for="response_view_policy"><strong>Visibility</strong></label>
                                 <p>Choose when students can see responses submitted by other students:</p>
-                                <div class="form-group">
+                                <div name="response-view-policy-form" class="form-group">
                                     {{form.response_view_policy}}
+                                    <div class="help-inline">Please choose how responses will be viewed.</div>
                                 </div>
-                                <div class="help-inline">Please choose how responses will be viewed.</div>
                                 <div class="row mb-5">
                                     <div class="col">
                                         <button class="btn btn-secondary prev">Previous</button>
