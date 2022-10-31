@@ -25,7 +25,8 @@ class LTIAuthMixin(object):
             role = role.lower()
             if ('staff' in role or
                 'instructor' in role or
-                    'administrator' in role):
+                    'administrator' in role or
+                    'teachingassistant' in role):
                 user.groups.add(ctx.faculty_group)
                 break
 
