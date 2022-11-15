@@ -30,6 +30,8 @@ cypress/videos
 cypress/screenshots
 cypress/fixtures
 celerybeat-schedule
+.vscode/
+mediathread.code-workspace
 package-lock.json
 package.json
 requirements.txt

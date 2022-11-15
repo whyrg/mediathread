@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.contrib.messages.constants import ERROR, INFO, WARNING
 from django.contrib.sites.shortcuts import get_current_site
+from django.core.exceptions import ValidationError
 from mediathread.assetmgr.models import Source, Asset
 from mediathread.main.course_details import get_upload_folder
 from mediathread.main.models import PanoptoIngestLogEntry
@@ -31,8 +32,12 @@ class PanoptoIngester(object):
         if self.request is not None:
             messages.add_message(self.request, level, msg)
         else:
+            session_id = None
+            if session:
+                session_id = session.get('Id')
+
             PanoptoIngestLogEntry.objects.create(
-                course=course, session_id=session['Id'],
+                course=course, session_id=session_id,
                 level=level, message=msg)
 
     def is_session_complete(self, course, session):
@@ -109,7 +114,12 @@ class PanoptoIngester(object):
         Source.objects.create(
             asset=asset, primary=True, label='mp4_panopto', url=session_id)
 
-        turl = 'https://{}{}'.format(settings.PANOPTO_SERVER, thumb_url)
+        turl = thumb_url
+        # If the thumb_url is already an absolute URI, don't do
+        # further processing.
+        if not thumb_url.startswith('https://'):
+            turl = 'https://{}{}'.format(settings.PANOPTO_SERVER, thumb_url)
+
         Source.objects.create(
             asset=asset, primary=False, label='thumb', url=turl)
         asset.global_annotation(author, auto_create=True)
@@ -140,7 +150,10 @@ class PanoptoIngester(object):
             course, session['Name'], author, session_id, session['ThumbUrl'])
 
         # Move the item to this course's folder
-        mgr.move_sessions([session_id], course_folder_id)
+        if not mgr.move_sessions([session_id], course_folder_id):
+            self.log_message(
+                course, session, ERROR,
+                'PanoptoSessionManager.move_sessions() failed!')
 
         # Send an email to the student letting them know the video is ready
         self.send_email(course, author, item)
@@ -157,10 +170,15 @@ class PanoptoIngester(object):
         email_address = (author.email or
                          '{}@columbia.edu'.format(author.username))
 
-        send_template_email(
-            'Mediathread submission now available',
-            'main/mediathread_submission.txt',
-            data, email_address)
+        try:
+            send_template_email(
+                'Mediathread submission now available',
+                'main/mediathread_submission.txt',
+                data, email_address)
+        except ValidationError:
+            self.log_message(
+                course, None, WARNING,
+                'Couldn\'t send email to {}'.format(email_address))
 
     def folder_ingest(self, course, author, ingest_folder_id):
         '''

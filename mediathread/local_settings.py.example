@@ -16,7 +16,7 @@ STATICFILES_DIRS = ()
 # Configure local developer database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.contrib.gis.db.backends.postgis',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'mediathread',
         'HOST': 'localhost',
         'PORT': '5432',
@@ -29,8 +29,3 @@ DATABASES = {
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # Or send them to /dev/null
 #EMAIL_BACKEND = 'django.core.mail.backends.dummy.EmailBackend'
-
-# Remove security settings for http://localhost:800
-SESSION_COOKIE_SECURE = False
-CSRF_COOKIE_SECURE = False
-MIDDLEWARE.remove('django_cookies_samesite.middleware.CookiesSameSite')

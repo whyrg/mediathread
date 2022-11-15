@@ -12,7 +12,7 @@ from django.db.models.functions import Lower
 from django.db.models.query_utils import Q
 from django.http import HttpResponse, HttpResponseRedirect, \
     HttpResponseForbidden
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.template import loader
 from django.template.defaultfilters import slugify
 from django.urls import reverse
@@ -26,8 +26,9 @@ from mediathread.assetmgr.models import Asset
 from mediathread.discussions.utils import get_course_discussions
 from mediathread.discussions.views import threaded_comment_json
 from mediathread.djangosherd.models import SherdNote, DiscussionIndex
-from mediathread.main.course_details import allow_public_compositions, \
-    cached_course_is_faculty, cached_course_collaboration
+from mediathread.main.course_details import (
+    allow_public_compositions, cached_course_is_faculty
+)
 from mediathread.main.models import UserSetting
 from mediathread.mixins import (
     LoggedInCourseMixin, RestrictedMaterialsMixin, AjaxRequiredMixin,
@@ -45,7 +46,6 @@ from mediathread.taxonomy.models import Vocabulary
 from mediathread.util import attach_course_to_request
 from reversion.models import Version
 from structuredcollaboration.models import Collaboration
-from threadedcomments.models import ThreadedComment
 
 
 class ProjectCreateView(LoggedInCourseMixin, JSONResponseMixin,
@@ -342,7 +342,7 @@ class ProjectReadOnlyView(ProjectReadableMixin,
 
     template_name = 'projects/composition_readonly.html'
 
-    def get(self, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         """
         A single panel read-only view of the specified project/version combo.
         No assignment, response or feedback access/links.
@@ -376,7 +376,7 @@ class ProjectReadOnlyView(ProjectReadableMixin,
             data['version'] = version_number
             data['public_url'] = project_url
             data['readonly'] = True
-            return self.render_to_response(data)
+            return render(request, self.template_name, data)
 
         # ajax view
         resource = ProjectResource(record_viewer=self.request.user,
@@ -422,37 +422,8 @@ class DiscussionAssignmentCreateView(LoggedInFacultyMixin, ProjectCreateView):
         # create a project
         project = self.create_project()
 
-        # get the project's collaboration object
-        project_collab = project.get_collaboration()
-
-        # construct a collaboration for this discussion
-        # the parent will be this project within the course context
-        # all course members can participate in the discussion
-        course_collab = cached_course_collaboration(request.course)
-        disc_collab = Collaboration(_parent=project_collab,
-                                    title=project.title,
-                                    context=course_collab)
-        disc_collab.set_policy('CourseProtected')
-        disc_collab.save()
-
-        # Create a ThreadedComment that will act as the discussion root
-        # It will be tied to the project via the collaboration object
-        # as a generic foreign key
-        new_threaded_comment = ThreadedComment.objects.create(
-            parent=None, title=project.title, comment=project.body,
-            user=request.user, site_id=1, content_object=disc_collab)
-
-        # Conversely, the discussion collaboration will hold the
-        # discussion root in its generic foreign key
-        # this thread can now be accessed via the "course_discussion"
-        # model attribute
-        disc_collab.content_object = new_threaded_comment
-        disc_collab.save()
-
-        DiscussionIndex.update_class_references(
-            new_threaded_comment.comment, new_threaded_comment.user,
-            new_threaded_comment, new_threaded_comment.content_object,
-            new_threaded_comment.user)
+        Project.objects.make_discussion_assignment(
+            project, request.course, request.user)
 
         return HttpResponseRedirect(
                 reverse('project-workspace',
@@ -487,7 +458,7 @@ class SequenceEditView(LoggedInCourseMixin, ProjectReadableMixin,
                 self.request.course)
         }
 
-        return self.render_to_response(data)
+        return render(request, self.template_name, data)
 
 
 class ProjectDispatchView(LoggedInCourseMixin, ProjectReadableMixin, View):
@@ -649,7 +620,7 @@ class CompositionView(LoggedInCourseMixin, ProjectReadableMixin,
         if not request.is_ajax():
             self.template_name = 'projects/composition.html'
             data['project'] = project
-            return self.render_to_response(data)
+            return render(request, self.template_name, data)
         else:
             panels = []
 

@@ -245,6 +245,22 @@
             } else {
                 self.layers[self.grouping].hide();
             }
+
+            // If this asset is a pdf, tell the sherd annotator what happened.
+            if (
+                djangosherd.assetview.clipform &&
+                    djangosherd.assetview.clipform.viewAllSelections
+            ) {
+                if (show) {
+                    djangosherd.assetview.clipform.viewAllSelections(
+                        self.active_asset.annotations
+                    );
+                } else {
+                    djangosherd.assetview.clipform.clearAllSelections(
+                        self.active_asset.annotations
+                    );
+                }
+            }
         };
 
         ///Groupby('author')
@@ -790,8 +806,8 @@
                     }, 'asset-annotation-current', false);
 
                     if (self.active_annotation) {
-                        var active = self.$parent.find('#accordion-' +
-                                         self.active_annotation.id)[0];
+                        var active = self.$parent.find(
+                            '#accordion-' + self.active_annotation.id)[0];
                         var parent = jQuery(active).parents('.accordion');
                         var idx = jQuery(parent).find('h3').index(active);
                         jQuery(parent).accordion('option', 'active', idx);
@@ -805,6 +821,17 @@
         //  - author === current_user
         this.newAnnotation = function() {
             this.active_annotation = null;
+
+            // If this asset is a pdf, clear all selections.
+            if (
+                djangosherd.assetview.clipform &&
+                    djangosherd.assetview.clipform.clearAllSelections
+            ) {
+                djangosherd.assetview.clipform.clearAllSelections(
+                    self.active_asset.annotations
+                );
+            }
+
             var context = {
                 'vocabulary': self.vocabulary,
                 'annotation': {
@@ -827,9 +854,12 @@
                         MediaThread.templates.asset_annotation_current,
                         context);
                     self.$parent.find('#annotation-current').html(rendered);
-                    djangosherd.assetview.clipform
-                        .setState({'start': 0, 'end': 0},
-                            {'mode': 'create'});
+                    djangosherd.assetview.clipform.setState({
+                        'start': 0,
+                        'end': 0
+                    }, {
+                        'mode': 'create'
+                    });
                     self._initTags();
                     self._initReferences();
                     self._initConcepts();
@@ -924,15 +954,23 @@
         //  - update list items
         //  - replace with 'new' annotation
         this.saveAnnotation = function(saveButton) {
-            jQuery(saveButton).attr('disabled', 'disabled')
-                .attr('value', 'Saving...').addClass('saving');
+            jQuery(saveButton)
+                .attr('disabled', 'disabled')
+                .attr('value', 'Saving...')
+                .addClass('saving');
 
             var frm = document.forms['edit-annotation-form'];
 
             // Push clipform or assetview state into 'local storage',
             //  i.e. the form that is posted to the server.
-            // @todo -- Unsure if this is the best spot for this...
+
+            // Get the annotation's data from the sherd annotator,
+            // based on media type.
+            //
+            // For video, this is the "clipform".
+            //
             var obj = djangosherd.assetview.clipform.getState();
+
             if (_propertyCount(obj) > 0) {
                 djangosherd.assetview.clipform.storage.update(obj, true);
             } else {
@@ -957,14 +995,18 @@
                 } else if (obj.start > obj.end) {
                     msg = 'The start time is greater than the end time.';
                 }
+            } else if (obj === 'missing pdfRect') {
+                msg = 'Select a rectangle on the PDF.';
             }
 
             if (msg) {
-                showMessage(msg,
+                showMessage(
+                    msg,
                     function() {
-                        jQuery(saveButton).removeAttr('disabled');
-                        jQuery(saveButton).removeClass('saving');
-                        jQuery(saveButton).attr('value', 'Save Selection');
+                        jQuery(saveButton)
+                            .removeAttr('disabled')
+                            .removeClass('saving')
+                            .attr('value', 'Save Selection');
                     },
                     'Error',
                     {
@@ -1214,6 +1256,14 @@
                 rendered = Mustache.render(
                     MediaThread.templates.asset_view_details_quick_edit,
                     context);
+
+                // PDF hack
+                if (self.active_asset.type === 'pdf') {
+                    const $clipform = jQuery(rendered).find(
+                        '#clipform-display');
+                    jQuery('.asset-view-container').before($clipform);
+                }
+
                 var $el = self.$parent.find('#asset-view-details-quick-edit');
                 $el.html(rendered);
             } else if (template_label === 'asset-annotation-current') {

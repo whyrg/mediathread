@@ -43,7 +43,7 @@ class LTIViewTest(TestCase):
 
         mixin.join_groups(self.lti, ctx, user)
         self.assertTrue(user in ctx.group.user_set.all())
-        self.assertFalse(user in ctx.faculty_group.user_set.all())
+        self.assertTrue(user in ctx.faculty_group.user_set.all())
 
         with self.settings(LTI_ELEVATE_TEACHINGASSISTANTS=['instructure.edu']):
             mixin.join_groups(self.lti, ctx, user)

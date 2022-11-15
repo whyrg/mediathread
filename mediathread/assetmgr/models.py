@@ -10,7 +10,7 @@ from django.contrib.auth.models import User
 from django.core.cache import cache
 from django.urls import reverse
 from django.db import models
-from django.utils.encoding import python_2_unicode_compatible, smart_text
+from django.utils.encoding import smart_text
 from tagging.models import Tag
 
 from mediathread.assetmgr.custom_storage import private_storage
@@ -125,7 +125,6 @@ class AssetManager(models.Manager):
         return new_asset
 
 
-@python_2_unicode_compatible
 class Asset(models.Model):
     objects = AssetManager()  # custom manager
 
@@ -145,6 +144,10 @@ class Asset(models.Model):
     active = models.BooleanField(default=True)
 
     title = models.CharField(max_length=1024)
+
+    transcript = models.TextField(
+        null=True, blank=True,
+        help_text='Transcript for audio/video media')
 
     # make it json or somethin
     metadata_blob = models.TextField(
@@ -341,7 +344,6 @@ class S3PrivateFileField(models.FileField):
         )
 
 
-@python_2_unicode_compatible
 class Source(models.Model):
     asset = models.ForeignKey(Asset, on_delete=models.CASCADE)
 
@@ -361,7 +363,8 @@ class Source(models.Model):
     # is a movie, even though it might have image urls for thumbs, etc
     primary = models.BooleanField(default=False, db_index=True)
 
-    media_type = models.CharField(default=None, null=True, max_length=64)
+    media_type = models.CharField(
+        default=None, null=True, blank=True, max_length=64)
 
     # in bytes (like FileField)
     size = models.PositiveIntegerField(default=0)
@@ -428,7 +431,6 @@ class Source(models.Model):
         return url_processor(self.url, self.label, request)
 
 
-@python_2_unicode_compatible
 class ExternalCollection(models.Model):
     title = models.CharField(max_length=1024)
     url = models.CharField(max_length=1024)
@@ -445,7 +447,6 @@ class ExternalCollection(models.Model):
         unique_together = ("title", "course")
 
 
-@python_2_unicode_compatible
 class SuggestedExternalCollection(models.Model):
     title = models.CharField(max_length=1024, unique=True)
     url = models.CharField(max_length=1024)

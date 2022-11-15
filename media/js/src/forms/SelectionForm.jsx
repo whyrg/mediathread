@@ -157,9 +157,10 @@ export default class SelectionForm extends React.Component {
                 </Form.Group>
 
                 <Form.Group className="mb-3">
-                    <label htmlFor="react-select-6-input">Tags</label>
+                    <label htmlFor="newSelectionTagsInput">Tags</label>
                     <Creatable
-                        id="newSelectionTags"
+                        id="newSelectionTagsContainer"
+                        inputId='newSelectionTagsInput'
                         ref={this.tagsRef}
                         menuPortalTarget={document.body}
                         styles={reactSelectStyles}
@@ -167,15 +168,19 @@ export default class SelectionForm extends React.Component {
                         onChange={this.handleTagsChange}
                         isMulti
                         defaultValue={selectedTags}
+                        noOptionsMessage={
+                            ({inputValue}) => !inputValue ?
+                                '' : 'No tags found'}
                         options={tagsOptions} />
                 </Form.Group>
 
                 {hasVocab && (
                     <Form.Group className="mb-3">
-                        <label htmlFor="react-select-7-input">
+                        <label htmlFor="newSelectionTermsInput">
                             Course Vocabulary</label>
                         <Select
-                            id="newSelectionTerms"
+                            id="newSelectionTermsContainer"
+                            inputId='newSelectionTermsInput'
                             ref={this.termsRef}
                             menuPortalTarget={document.body}
                             styles={reactSelectStyles}

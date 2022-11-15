@@ -1,6 +1,7 @@
 # pylint: disable-msg=C0302
 import datetime
 import hashlib
+import pathlib
 
 from courseaffils.lib import in_course_or_404, in_course, AUTO_COURSE_SELECT
 from courseaffils.models import CourseAccess
@@ -10,6 +11,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from django.db import DataError
 from django.db.models.functions import Lower
 from django.db.models.query_utils import Q
 from django.http import (
@@ -167,7 +169,7 @@ class MostRecentView(LoggedInCourseMixin, View):
 # This view is used by Mediathread's browser extension, so disable CSRF
 # until we implement this in the extension.
 @method_decorator(csrf_exempt, name='dispatch')
-class AssetCreateView(View):
+class ExternalAssetCreateView(View):
     OPERATION_TAGS = ('jump', 'title', 'noui', 'v', 'share',
                       'as', 'set_course', 'secret')
 
@@ -340,19 +342,18 @@ class AssetCreateView(View):
             return HttpResponseRedirect(asset_url)
 
 
-class UploadedAssetCreateView(LoggedInCourseMixin, View):
+class AssetCreateView(LoggedInCourseMixin, View):
     """
-    View for creating an Asset via an uploaded media object.
+    View for creating an Asset via an uploaded media object, or
+    a piece of media imported via the import form.
     """
     http_method_names = ['post']
 
     def dispatch(self, request, *args, **kwargs):
         r = super().dispatch(request, *args, **kwargs)
 
-        # This view is only enabled for staff and instructors right
-        # now.
-        if not (request.user.is_staff or
-                request.course.is_faculty(request.user)):
+        # @todo - update for pdf permissions when that's ready to go
+        if not course_details.can_upload_image(request.user, request.course):
             raise PermissionDenied
 
         return r
@@ -364,10 +365,10 @@ class UploadedAssetCreateView(LoggedInCourseMixin, View):
                 'Title and URL are required to make an asset.')
 
         title = request.POST.get('title').strip()
-        url = request.POST.get('url')
+        url = request.POST.get('url').strip()
 
         author = request.user
-        if (request.user.is_staff):
+        if request.user.is_staff and request.POST.get('as'):
             upload_as = request.POST.get('as')
             author = get_object_or_404(User, username=upload_as)
 
@@ -376,20 +377,36 @@ class UploadedAssetCreateView(LoggedInCourseMixin, View):
         asset.global_annotation(request.user, True)
 
         label = 'image'
+        width = 0
+        height = 0
+
         if url.endswith('.pdf'):
             label = 'pdf'
-            # Dimensions are not needed for PDF display.
-            width = 0
-            height = 0
-        else:
+        elif request.POST.get('width') and request.POST.get('height'):
             width = request.POST.get('width')
             height = request.POST.get('height')
 
-        Source.objects.create(
-            asset=asset, url=url,
-            primary=True,
-            width=width, height=height,
-            label=label)
+        # If the form passed in a valid label, use it.
+        lbl = request.POST.get('label')
+        if lbl and lbl in Asset.primary_labels:
+            label = lbl
+
+        try:
+            Source.objects.create(
+                asset=asset,
+                url=url,
+                primary=True,
+                width=width, height=height,
+                label=label)
+        except DataError:
+            asset.delete()
+            messages.error(
+                request,
+                'There was an error creating the ' +
+                '<strong>{}</strong> asset.'.format(
+                    title
+                ))
+            return redirect('course_detail', request.course.pk)
 
         asset_url = reverse('asset-view', args=[request.course.pk, asset.pk])
 
@@ -724,10 +741,12 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
             label='thumb')
 
     def upload_to_panoto(self, request):
-        suffix = 'mp4'
+        filename = request.POST.get('mediaUploadFilename').strip()
+        suffix = pathlib.Path(filename).suffix
         title = request.POST.get('title').strip()
         url = request.POST.get('url')
-        logger.info("==================== upload_to_panoto thread starting: title=" + title + " ====================")
+        logger.info("====== upload_to_panoto thread starting: title=" +
+                    title + ", url=" + url + ", suffix=" + suffix + " =======")
 
         s3_key = url.split(settings.AWS_STORAGE_BUCKET_NAME + '/')[1]
 
@@ -744,21 +763,23 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
         panopto_id = self.verify_upload_to_panopto(uploader.target.upload_id)
         thub_url = self.pull_thumb_from_panopto(panopto_id)
         self.create_panopto_asset(request, title, panopto_id, thub_url)
-
         logger.info('upload_to_panoto thread finished')
 
     def post(self, request, *args, **kwargs):
         try:
-            upload_thread = threading.Thread(target=self.upload_to_panoto, args=(request,))
+            upload_thread = threading.Thread(target=self.upload_to_panoto,
+                                             args=(request,))
             upload_thread.start()
-        except:
+        except Exception:
             logger.error('Error: unable to start thread')
 
         redirect_url = request.POST.get(
             'redirect-url',
             reverse('course_detail', args=[request.course.pk]))
-        messages.success(request, 'Your media file will take some time to upload. Please check back in a few hours.')
+        messages.success(request, 'Your media file will take some time to ' +
+                         'upload. Please check back in a few hours.')
         return HttpResponseRedirect(redirect_url)
+
 
 def final_cut_pro_xml(request, asset_id):
     if not request.user.is_staff:
@@ -1069,7 +1090,7 @@ class AssetEmbedListView(LoggedInCourseMixin, RestrictedMaterialsMixin,
             'height': EMBED_HEIGHT
         }
 
-        return self.render_to_response(data)
+        return render(request, self.template_name, data)
 
     def get_selection(self, keys, user):
         for k in keys:
@@ -1313,10 +1334,18 @@ class ReactAssetDetailView(LoggedInCourseMixin, DetailView):
         can_upload_image = course_details.can_upload_image(
             self.request.user, self.request.course)
 
+        owners = []
+        if (self.request.course.is_member(self.request.user) and
+            (self.request.user.is_staff or
+             self.request.user.has_perm('assetmgr.can_upload_for'))):
+            owners = UserResource().render_list(
+                self.request, self.request.course.members)
+
         context.update({
             'course': self.request.course,
             'collections': collections,
             'uploader': uploader,
+            'owners': owners,
             'can_upload': can_upload,
             'can_upload_image': can_upload_image,
         })
@@ -1495,13 +1524,18 @@ class PDFViewerDetailView(LoggedInCourseMixin, DetailView):
     def dispatch(self, request, *args, **kwargs):
         r = super().dispatch(request, *args, **kwargs)
 
-        if request.user.is_superuser or \
-           request.course.is_faculty(request.user):
+        if request.user and (
+                request.user.is_superuser or
+                (request.course and
+                 request.course.is_faculty(request.user))
+        ):
             return r
 
-        if not course_details.all_items_are_visible(request.course) and \
-           not request.course.is_faculty(self.object.author) and \
-           self.object.author != request.user:
+        if (request.course is None) or (
+                not course_details.all_items_are_visible(request.course) and
+                not request.course.is_faculty(self.object.author) and
+                self.object.author != request.user
+        ):
             return HttpResponseForbidden('You can\'t view this asset.')
 
         return r

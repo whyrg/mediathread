@@ -7,10 +7,9 @@ from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
-from django.utils.encoding import python_2_unicode_compatible, smart_text
+from django.utils.encoding import smart_text
 
 
-@python_2_unicode_compatible
 class CollaborationPolicyRecord(models.Model):
     policy_name = models.CharField(max_length=512)
 
@@ -52,7 +51,6 @@ class CollaborationManager(models.Manager):
             content_type__model=model_name, object_pk=obj.pk)
 
 
-@python_2_unicode_compatible
 class Collaboration(models.Model):
     objects = CollaborationManager()
     user = models.ForeignKey(
@@ -63,6 +61,9 @@ class Collaboration(models.Model):
     title = models.CharField(max_length=1024, null=True, default=None)
     slug = models.SlugField(
         max_length=1024, null=True, default=None, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     # Content-object field
     content_type = models.ForeignKey(
@@ -160,6 +161,8 @@ class Collaboration(models.Model):
             self.policy_record, created = \
                 CollaborationPolicyRecord.objects.get_or_create(
                     policy_name=policy_name)
+
+        self.save()
 
     def __str__(self):
         return u'%s %r <%s %s> [%s]' % (self.title, self.pk, self.content_type,

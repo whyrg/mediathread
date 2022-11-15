@@ -83,6 +83,18 @@ class ProjectTest(MediathreadTestMixin, TestCase):
             course=self.sample_course, author=self.instructor_one,
             policy=PUBLISH_DRAFT[0], project_type='assignment')
 
+        self.discussion_assignment = ProjectFactory.create(
+            course=self.sample_course,
+            author=self.instructor_one,
+            body='Discussion Assignment Body',
+            policy=PUBLISH_WHOLE_CLASS[0],
+            project_type='discussion-assignment'
+        )
+        Project.objects.make_discussion_assignment(
+            self.discussion_assignment,
+            self.discussion_assignment.course,
+            self.discussion_assignment.author)
+
     def test_can_cite(self):
         # notes in an unsubmitted project are not citable regardless of viewer
         self.assertFalse(self.project_private.can_cite(
@@ -184,11 +196,50 @@ class ProjectTest(MediathreadTestMixin, TestCase):
                                                   self.alt_instructor)
 
         self.assertEquals(new_project.title, self.assignment.title)
+        self.assertEquals(new_project.summary, self.assignment.summary)
+        self.assertEquals(new_project.body, self.assignment.body)
         self.assertEquals(new_project.author, self.alt_instructor)
         self.assertEquals(new_project.course, self.alt_course)
         self.assertEquals(new_project.description(), 'Composition Assignment')
         self.assertEquals(new_project.visibility_short(), 'Shared with Class')
         self.assertEquals(AssignmentItem.objects.count(), 0)
+
+    def test_migrate_one_discussion_assignment(self):
+        self.assertIsNotNone(self.discussion_assignment.get_collaboration())
+        self.assertTrue(self.discussion_assignment.is_discussion_assignment())
+        discussion = self.discussion_assignment.course_discussion()
+        self.assertIsNotNone(discussion)
+
+        new_project = Project.objects.migrate_one(
+            self.discussion_assignment,
+            self.alt_course,
+            self.alt_instructor)
+
+        self.assertEqual(new_project.title, self.discussion_assignment.title)
+        self.assertEqual(
+            new_project.summary,
+            self.discussion_assignment.summary)
+        self.assertEqual(
+            new_project.body,
+            self.discussion_assignment.body)
+        self.assertEqual(new_project.author, self.alt_instructor)
+        self.assertEqual(new_project.course, self.alt_course)
+        self.assertEqual(
+            new_project.visibility_short(), 'Shared with Class')
+
+        collab = new_project.get_collaboration()
+        self.assertIsNotNone(collab)
+        new_discussion = new_project.course_discussion()
+        self.assertIsNotNone(new_discussion)
+        self.assertEqual(discussion.title, new_discussion.title)
+        self.assertEqual(discussion.comment, new_discussion.comment)
+
+        # Assert that the original discussion's body text made it through
+        # to the ThreadedComment's comment attribute.
+        self.assertEqual(discussion.comment, self.discussion_assignment.body)
+
+        self.assertEqual(discussion.user, self.instructor_one)
+        self.assertEqual(new_discussion.user, self.alt_instructor)
 
     def test_migrate_selection_assignment(self):
         assignment1 = ProjectFactory.create(
@@ -282,7 +333,7 @@ class ProjectTest(MediathreadTestMixin, TestCase):
     def test_visible_by_course(self):
         visible_projects = Project.objects.visible_by_course(
             self.sample_course, self.student_one)
-        self.assertEquals(len(visible_projects), 6)
+        self.assertEquals(len(visible_projects), 7)
         self.assertTrue(self.assignment in visible_projects)
         self.assertTrue(self.selection_assignment in visible_projects)
         self.assertTrue(self.sequence_assignment in visible_projects)
@@ -293,7 +344,7 @@ class ProjectTest(MediathreadTestMixin, TestCase):
         visible_projects = Project.objects.visible_by_course(
             self.sample_course, self.student_two)
 
-        self.assertEquals(len(visible_projects), 4)
+        self.assertEquals(len(visible_projects), 5)
         self.assertTrue(self.assignment in visible_projects)
         self.assertTrue(self.selection_assignment in visible_projects)
         self.assertTrue(self.sequence_assignment in visible_projects)
@@ -301,7 +352,7 @@ class ProjectTest(MediathreadTestMixin, TestCase):
 
         visible_projects = Project.objects.visible_by_course(
             self.sample_course, self.instructor_one)
-        self.assertEquals(len(visible_projects), 6)
+        self.assertEquals(len(visible_projects), 7)
         self.assertTrue(self.assignment in visible_projects)
         self.assertTrue(self.draft_assignment in visible_projects)
         self.assertTrue(self.project_class_shared in visible_projects)
@@ -319,7 +370,7 @@ class ProjectTest(MediathreadTestMixin, TestCase):
 
         visible_projects = Project.objects.visible_by_course_and_user(
             self.sample_course, self.student_one, self.instructor_one, True)
-        self.assertEquals(len(visible_projects), 3)
+        self.assertEquals(len(visible_projects), 4)
         self.assertTrue(self.assignment in visible_projects)
         self.assertTrue(self.selection_assignment in visible_projects)
         self.assertTrue(self.sequence_assignment in visible_projects)
@@ -687,7 +738,7 @@ class ProjectTest(MediathreadTestMixin, TestCase):
     def test_visible_assignments_by_course_student(self):
         lst = Project.objects.visible_assignments_by_course(
             self.sample_course, self.student_one)
-        self.assertEquals(len(lst), 3)
+        self.assertEquals(len(lst), 4)
         self.assertTrue(self.selection_assignment in lst)
         self.assertTrue(self.sequence_assignment in lst)
         self.assertTrue(self.assignment in lst)
@@ -695,7 +746,7 @@ class ProjectTest(MediathreadTestMixin, TestCase):
     def test_visible_assignments_by_course_faculty(self):
         lst = Project.objects.visible_assignments_by_course(
             self.sample_course, self.instructor_one)
-        self.assertEquals(len(lst), 4)
+        self.assertEquals(len(lst), 5)
         self.assertTrue(self.selection_assignment in lst)
         self.assertTrue(self.sequence_assignment in lst)
         self.assertTrue(self.assignment in lst)
@@ -704,7 +755,7 @@ class ProjectTest(MediathreadTestMixin, TestCase):
     def test_unresponded_assignments(self):
         lst = Project.objects.unresponded_assignments(self.sample_course,
                                                       self.student_one)
-        self.assertEquals(len(lst), 3)
+        self.assertEquals(len(lst), 4)
         self.assertTrue(self.selection_assignment in lst)
         self.assertTrue(self.sequence_assignment in lst)
         self.assertTrue(self.assignment in lst)
@@ -717,7 +768,7 @@ class ProjectTest(MediathreadTestMixin, TestCase):
 
         lst = Project.objects.unresponded_assignments(self.sample_course,
                                                       self.student_one)
-        self.assertEquals(len(lst), 2)
+        self.assertEquals(len(lst), 3)
         self.assertTrue(self.assignment in lst)
         self.assertTrue(self.sequence_assignment in lst)
 
@@ -729,7 +780,7 @@ class ProjectTest(MediathreadTestMixin, TestCase):
 
         lst = Project.objects.unresponded_assignments(self.sample_course,
                                                       self.student_one)
-        self.assertEquals(len(lst), 1)
+        self.assertEquals(len(lst), 2)
         self.assertTrue(self.sequence_assignment in lst)
 
     def test_is_participant(self):

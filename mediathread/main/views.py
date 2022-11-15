@@ -17,7 +17,7 @@ from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.http import (
     HttpResponse, HttpResponseRedirect, Http404)
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, render
 from django.template import loader
 from django.urls import reverse
 from django.utils.decorators import method_decorator
@@ -84,7 +84,8 @@ def django_settings(request):
         'REVISION',
         'SERVER_EMAIL',
         'PANOPTO_SERVER',
-        'IMAGE_UPLOAD_AVAILABLE'
+        'IMAGE_UPLOAD_AVAILABLE',
+        'SENTRY_DSN',
     ]
 
     ctx = {
@@ -407,7 +408,7 @@ class ContactUsView(FormView):
 
         # send to server email instead
         send_mail('Mediathread Support Request', form_data['description'],
-                  settings.SERVER_EMAIL, (settings.SERVER_EMAIL,))
+                  settings.SERVER_EMAIL, (settings.CONTACT_US_EMAIL,))
 
         # send a follow-up to the user requesting help
         support_email = getattr(settings, 'SUPPORT_DESTINATION', None)
@@ -898,7 +899,7 @@ class CourseAcceptInvitationView(FormView):
 
         form = self.get_form()
         ctx = self.get_context_data(form=form, invite=invite)
-        return self.render_to_response(ctx)
+        return render(request, self.template_name, ctx)
 
     def form_valid(self, form):
         invite = self.get_invite(self.kwargs.get('uidb64', None))
@@ -1038,7 +1039,7 @@ If you are new to Mediathread, a CTL learning designer or your
 department specialist will check in with you in the coming days to
 make sure all is going well. If you have any pressing questions in the
 meantime, please feel free to contact us at
-ccnmtl-mediathread@ccnmtl.columbia.edu.
+ctl-mediathread@columbia.edu.
 
 Thanks,
 The Mediathread Team
@@ -1084,7 +1085,7 @@ Faculty: {} <{}>
             subject,
             body,
             settings.SERVER_EMAIL,
-            [settings.SERVER_EMAIL])
+            [settings.CONTACT_US_EMAIL])
 
     def create_course(self, form, affil):
         """Creates a Course for this form.
@@ -1232,16 +1233,22 @@ Faculty: {} <{}>
 class LTICourseSelector(LoggedInMixin, View):
 
     def get(self, request, context):
-        try:
-            messages.add_message(
-                request, messages.INFO,
-                'Reminder: please log out of Mediathread '
-                'after you log out of Canvas.')
+        messages.add_message(
+            request, messages.INFO,
+            'Reminder: please log out of Mediathread '
+            'after you log out of Courseworks.')
 
+        url = '/'
+        try:
             ctx = LTICourseContext.objects.get(lms_course_context=context)
-            url = reverse('course_detail', args=[ctx.group.course.id])
         except LTICourseContext.DoesNotExist:
-            url = '/'
+            pass
+
+        try:
+            url = reverse('course_detail', args=[ctx.group.course.pk])
+        except Group.course.RelatedObjectDoesNotExist:
+            # Don't fail when we don't find a course
+            pass
 
         return HttpResponseRedirect(url)
 
@@ -1258,7 +1265,7 @@ class LTICourseCreate(LoggedInMixin, View):
         send_template_email(
             'Mediathread Course Connected',
             'main/notify_lti_course_connect.txt',
-            data, settings.SERVER_EMAIL)
+            data, settings.CONTACT_US_EMAIL)
 
     def thank_faculty(self, course):
         send_template_email(

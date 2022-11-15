@@ -211,13 +211,14 @@ function DjangoSherd_Asset_Config() {
     });
 
     ds.assetview.html.push(
-        jQuery('div.asset-display').get(0), // id=videoclip
-        {
-            asset : ds.assetMicroFormat.read(ds.dom_assets[0])
+        // id=videoclip
+        jQuery('div.asset-display').get(0), {
+            asset: ds.assetMicroFormat.read(ds.dom_assets[0])
         });
 
     // /# load asset into note-form
-    var clipform = $('clipform-display');
+    var clipform = jQuery('#clipform-display');
+
     if (clipform) {
         ds.assetview.clipform.html.push('clipform-display', {
             asset : {}
@@ -382,9 +383,9 @@ CitationView.prototype.openCitationById = function (anchor, asset_id, annotation
 CitationView.prototype.displayCitation = function (anchor, ann_obj, id) {
     var self = this;
 
-    var asset_target = ((self.options.targets && self.options.targets.asset) ?
-            self.options.targets.asset
-            : document.getElementById("videoclipbox"));
+    var asset_target =
+        ((self.options.targets && self.options.targets.asset) ?
+         self.options.targets.asset : document.getElementById("videoclipbox"));
 
     if (typeof self.options.onPrepareCitation === 'function') {
         self.options.onPrepareCitation(asset_target);
@@ -442,6 +443,7 @@ CitationView.prototype.displayCitation = function (anchor, ann_obj, id) {
     if (asset_obj) {
         asset_obj.autoplay = (self.options.autoplay) ? self.options.autoplay : false;
         asset_obj.presentation = self.options.presentation || 'small';
+        asset_obj.pdf_iframe = self.options.pdf_iframe || false;
 
         if (targets.asset_title) {
             if (targets.annotation_title.innerHTML === "") {

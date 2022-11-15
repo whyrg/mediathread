@@ -9,6 +9,7 @@ from django.urls import reverse
 from django.utils.text import slugify
 import factory
 from factory.django import DjangoModelFactory
+from factory.fuzzy import FuzzyText
 import json
 from mediathread.assetmgr.models import (
     Asset, Source, ExternalCollection,
@@ -136,11 +137,43 @@ class SherdNoteFactory(DjangoModelFactory):
     author = factory.SubFactory(UserFactory)
 
 
+class CollaborationPolicyRecordFactory(DjangoModelFactory):
+    class Meta:
+        model = CollaborationPolicyRecord
+
+    policy_name = 'PolicyName'
+
+
+class CollaborationFactory(DjangoModelFactory):
+    class Meta:
+        model = Collaboration
+
+    user = factory.SubFactory(UserFactory)
+    group = factory.SubFactory(GroupFactory)
+    policy_record = factory.SubFactory(CollaborationPolicyRecordFactory)
+
+
+class ThreadedCommentFactory(DjangoModelFactory):
+    class Meta:
+        model = ThreadedComment
+
+    title = 'Comment Title'
+    comment = 'comment content'
+    user = factory.SubFactory(UserFactory)
+    site = factory.LazyAttribute(
+        lambda _: Site.objects.all().first())
+    content_type = factory.LazyAttribute(
+        lambda _: ContentType.objects.get_for_model(ThreadedComment))
+
+
 class ProjectFactory(DjangoModelFactory):
     class Meta:
         model = Project
+
     course = factory.SubFactory(CourseFactory)
     title = factory.Sequence(lambda n: 'Project %d' % n)
+    body = ''
+    summary = FuzzyText()
     author = factory.SubFactory(UserFactory)
     project_type = 'composition'
 
@@ -162,18 +195,6 @@ class ProjectFactory(DjangoModelFactory):
     def participants(self, create, extracted, **kwargs):
         if create:
             self.participants.add(self.author)
-
-
-class CollaborationFactory(DjangoModelFactory):
-    class Meta:
-        model = Collaboration
-    user = factory.SubFactory(UserFactory)
-    group = factory.SubFactory(GroupFactory)
-
-
-class CollaborationPolicyRecordFactory(DjangoModelFactory):
-    class Meta:
-        model = CollaborationPolicyRecord
 
 
 class AssignmentItemFactory(DjangoModelFactory):
@@ -436,4 +457,4 @@ class LoggedInStaffTestMixin(object):
         self.u.save()
         login = self.client.login(username='test_user',
                                   password='test')
-        assert(login is True)
+        assert (login is True)

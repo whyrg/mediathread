@@ -52,6 +52,16 @@ const updateSelectionUrl = function(selectionId) {
     window.history.pushState(null, null, newPath);
 };
 
+/**
+ * Send the disableRectangleTool message to the PDF iframe.
+ */
+const disableRectangleTool = function() {
+    const iframe = window.jQuery('iframe.pdfjs')[0];
+    if (iframe) {
+        iframe.contentWindow.postMessage('disableRectangleTool', '*');
+    }
+};
+
 export default class AssetDetail extends React.Component {
     constructor(props) {
         super(props);
@@ -83,6 +93,8 @@ export default class AssetDetail extends React.Component {
             selectionEndTime: activeSelection ? activeSelection.range2 : 0,
 
             assetTitle: this.props.asset ? this.props.asset.title : null,
+            assetTranscript: this.props.asset ?
+                this.props.asset.transcript : null,
 
             deletingSelectionId: null,
             showDeleteDialog: false,
@@ -149,6 +161,7 @@ export default class AssetDetail extends React.Component {
         this.addFreeformInteraction = this.addFreeformInteraction.bind(this);
         this.addDrawlineInteraction = this.addDrawlineInteraction.bind(this);
         this.onUpdateAssetTitle = this.onUpdateAssetTitle.bind(this);
+        this.onUpdateAssetTranscript = this.onUpdateAssetTranscript.bind(this);
         this.onDrawCancel = this.onDrawCancel.bind(this);
         this.onClickClear = this.onClickClear.bind(this);
         this.onClickCancel = this.onClickCancel.bind(this);
@@ -180,6 +193,10 @@ export default class AssetDetail extends React.Component {
 
     onUpdateAssetTitle(newTitle) {
         this.setState({assetTitle: newTitle});
+    }
+
+    onUpdateAssetTranscript(transcript) {
+        this.setState({assetTranscript: transcript});
     }
 
     onCreateSelection(e, tags, terms) {
@@ -270,6 +287,12 @@ export default class AssetDetail extends React.Component {
                 end: this.state.selectionEndTime
             };
         } else if (this.type === 'pdf') {
+            if (!this.state.pdfRect) {
+                this.onShowValidationError(
+                    'Please make a selection on the PDF.');
+                return;
+            }
+
             annotationData = {
                 geometry: {
                     type: 'Rectangle',
@@ -305,6 +328,11 @@ export default class AssetDetail extends React.Component {
                             me.onSelectSelection(
                                 createdSelection.title,
                                 createdSelection.id);
+
+                            // Clear pdfRect state, we don't need it
+                            // anymore.
+                            me.setState({pdfRect: null});
+
                             return me.onViewSelection(e, createdSelection);
                         });
                 });
@@ -320,6 +348,8 @@ export default class AssetDetail extends React.Component {
             showClear: false,
             toolType: null
         });
+
+        disableRectangleTool();
 
         e.preventDefault();
         const me = this;
@@ -644,10 +674,7 @@ export default class AssetDetail extends React.Component {
             toolType: null
         });
 
-        const iframe = window.jQuery('iframe.pdfjs')[0];
-        if (iframe) {
-            iframe.contentWindow.postMessage('disableRectangleTool', '*');
-        }
+        disableRectangleTool();
     }
 
     onPlaySelection(e) {
@@ -692,6 +719,11 @@ export default class AssetDetail extends React.Component {
         let media = null;
 
         let invisibleEl = null;
+        let label = `asset: ${this.props.asset.title}`;
+        if (this.state.activeSelection) {
+            label = `annotation: ${this.state.activeSelection}`;
+        }
+
         if (this.state.tab === 'viewMetadata') {
             invisibleEl = (
                 <div className="input-group">
@@ -769,7 +801,9 @@ export default class AssetDetail extends React.Component {
                     {annotationTools}
                     <div
                         id={`map-${this.props.asset.id}`}
-                        className="ol-map"></div>
+                        className="ol-map"
+                        aria-live="polite"
+                        aria-label={'Image for ' + label}></div>
                 </React.Fragment>
             );
         } else if (this.type === 'video') {
@@ -892,7 +926,8 @@ export default class AssetDetail extends React.Component {
             media = (
                 <React.Fragment>
                     {annotationTools}
-                    <div className="embed-responsive embed-responsive-16by9">
+                    <div className="embed-responsive embed-responsive-16by9" aria-live="polite"
+                        aria-label={'Video for ' + label}>
                         <ReactPlayer
                             className="react-player embed-responsive-item"
                             width="100%"
@@ -953,7 +988,8 @@ export default class AssetDetail extends React.Component {
             media = (
                 <>
                     {annotationTools}
-                    <div className="d-flex">
+                    <div className="d-flex" aria-live="polite"
+                        aria-label={'PDF for ' + label}>
                         <iframe
                             className="flex-fill pdfjs"
                             src={`/asset/pdfjs/${this.asset.asset.id}`}
@@ -1028,9 +1064,15 @@ export default class AssetDetail extends React.Component {
 
                 <div className="row">
                     <div className="col-sm-7">
-                        <h4>{leftColumnHeader}</h4>
+                        <h3>{leftColumnHeader}</h3>
                         <div className="sticky-top">
                             {media}
+
+                            {this.state.assetTranscript && (
+                                <div className="mediathread-transcript">
+                                    {this.state.assetTranscript}
+                                </div>
+                            )}
                         </div>
                     </div>
 
@@ -1062,7 +1104,7 @@ export default class AssetDetail extends React.Component {
                         )}
                         {this.state.tab === 'createSelection' && (
                             <>
-                                <h4>2. Add Details</h4>
+                                <h3>2. Add Details</h3>
                                 <CreateSelection
                                     type={this.type}
                                     tags={this.props.tags}
@@ -1079,8 +1121,10 @@ export default class AssetDetail extends React.Component {
                         )}
                         {this.state.tab === 'viewMetadata' && (
                             <ViewItem
+                                assetInstance={this.asset}
                                 asset={this.props.asset}
                                 onUpdateAssetTitle={this.onUpdateAssetTitle}
+                                onUpdateAssetTranscript={this.onUpdateAssetTranscript}
                                 onShowValidationError={this.onShowValidationError}
                                 leaveAssetDetailView={this.props.leaveAssetDetailView}
                             />
@@ -1109,10 +1153,7 @@ export default class AssetDetail extends React.Component {
                 prevState.tab === 'createSelection' &&
                 prevState.tab !== this.state.tab
         ) {
-            const iframe = window.jQuery('iframe.pdfjs')[0];
-            if (iframe) {
-                iframe.contentWindow.postMessage('disableRectangleTool', '*');
-            }
+            disableRectangleTool();
         }
 
         if (prevState.isDrawing !== this.state.isDrawing) {
@@ -1255,10 +1296,7 @@ export default class AssetDetail extends React.Component {
         }
 
         if (this.type === 'pdf') {
-            const iframe = window.jQuery('iframe.pdfjs')[0];
-            if (iframe) {
-                iframe.contentWindow.postMessage('disableRectangleTool', '*');
-            }
+            disableRectangleTool();
         }
     }
 

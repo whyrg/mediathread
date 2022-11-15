@@ -3881,6 +3881,10 @@ div.ui-dialog div.asset-view-details h2 {
     }
 }
 
+.navbar .nav-item .btn-outline-secondary {
+    color: #727B83;
+}
+
 a.btn.btn-default {
     color: #333;
     font-weight: normal;
@@ -4115,7 +4119,8 @@ ul.section-tabs>li>a.active {
     color: yellow;
 }
 
-.card-thumbnail .react-pdf__Page canvas {
+.card-thumbnail .react-pdf__Page canvas,
+.jux-media-display .react-pdf__Page canvas {
     margin: 0 auto;
 }
 
@@ -4180,6 +4185,7 @@ ul.section-tabs>li>a.active {
 }
 
 .card-thumbnail img,
+.card-thumbnail .image-overlay,
 .card-thumbnail .ol-map,
 .card-thumbnail canvas {
     height: 192px;
@@ -4221,7 +4227,7 @@ ul.section-tabs>li>a.active {
     border-radius: .25rem;
 }
 
-#selectionsAccordion h5 {
+#selectionsAccordion h4 {
     margin-top: 1em;
 }
 
@@ -4325,6 +4331,11 @@ ul.section-tabs>li>a.active {
     padding: inherit;
 }
 
+.toolbar-annotations .rectangle-button:focus {
+    background-color: #ffc107!important;
+    color: #212529;
+}
+
 input#annotationFilter {
     max-width: 140px;
 }
@@ -4367,6 +4378,11 @@ ul.selection-spinner {
 
 #uploaded-thumbnail.img-thumbnail {
     max-height: 200px;
+}
+
+.mediathread-transcript {
+    /* Interpret newline character properly in the transcript view. */
+    white-space: pre-line;
 }
 
 .alert-info {

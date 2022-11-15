@@ -4,13 +4,15 @@ from courseaffils.models import Course
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericRelation
 from django.contrib.contenttypes.models import ContentType
+from django.contrib.sites.models import Site
 from django.db import models
 from django.db.models import Q
 from django.urls import reverse
-from django.utils.encoding import python_2_unicode_compatible
 from mediathread.assetmgr.models import Asset
-from mediathread.djangosherd.models import SherdNote
-from mediathread.main.course_details import cached_course_is_faculty
+from mediathread.djangosherd.models import SherdNote, DiscussionIndex
+from mediathread.main.course_details import (
+    cached_course_is_faculty, cached_course_collaboration
+)
 from mediathread.main.util import user_display_name_last_first, \
     user_display_name
 from mediathread.sequence.models import SequenceAsset
@@ -135,25 +137,49 @@ class ProjectManager(models.Manager):
 
         return object_map
 
-    def migrate_one(self, project, course, user):
+    @staticmethod
+    def migrate_one(project, course, user):
+        """
+        Migrate a project to a new course.
+
+        This clones the given project and creates a new instance of it,
+        associated with the given course and author.
+
+        Returns the new Project.
+        """
         new_project = Project.objects.create(
-            title=project.title, project_type=project.project_type,
-            course=course, author=user,
+            title=project.title,
+            project_type=project.project_type,
+            course=course,
+            author=user,
+            body=project.body,
+            summary=project.summary,
             response_view_policy=project.response_view_policy)
 
         collaboration_context = Collaboration.objects.get_for_object(course)
 
-        policy_record = project.get_collaboration().policy_record
+        proj_collab = project.get_collaboration()
+        policy_record = proj_collab.policy_record
 
         Collaboration.objects.create(
-            user=new_project.author, title=new_project.title,
+            user=new_project.author,
+            title=new_project.title,
             content_object=new_project,
             context=collaboration_context,
             policy_record=policy_record)
 
+        comment_type = ContentType.objects.get_for_model(ThreadedComment)
+        for child in proj_collab.children.all():
+            # The collaboration has children - this is probably a
+            # discussion assignment. Clone those too.
+            if child.content_type == comment_type:
+                Project.objects.make_discussion_assignment(
+                    new_project, course, user)
+
         return new_project
 
-    def migrate_assignment_item(self, course, user,
+    @staticmethod
+    def migrate_assignment_item(course, user,
                                 old_project, new_project, object_map):
         aItem = AssignmentItem.objects.filter(project=old_project).first()
         if aItem is not None:
@@ -168,7 +194,56 @@ class ProjectManager(models.Manager):
             AssignmentItem.objects.create(project=new_project,
                                           asset=new_asset)
 
-    def visible_by_course(self, course, viewer):
+    @staticmethod
+    def make_discussion_assignment(project, course, user):
+        """
+        Turn the given Project into a Discussion assignment.
+
+        Including necessary ThreadedComments and Collaboration objects.
+        """
+        # get the project's collaboration object
+        project_collab = project.get_collaboration()
+
+        # Construct a collaboration for this discussion.
+        # The parent will be this project within the course context
+        # all course members can participate in the discussion
+        course_collab = cached_course_collaboration(course)
+        disc_collab = Collaboration(
+            _parent=project_collab,
+            title=project.title,
+            context=course_collab)
+        disc_collab.set_policy('CourseProtected')
+        disc_collab.save()
+
+        # Create a ThreadedComment that will act as the discussion root
+        # It will be tied to the project via the collaboration object
+        # as a generic foreign key
+        site = Site.objects.first()
+        site_id = 1
+        if site:
+            site_id = site.pk
+
+        new_threaded_comment = ThreadedComment.objects.create(
+            parent=None, title=project.title,
+            comment=project.body,
+            user=user,
+            site_id=site_id,
+            content_object=disc_collab)
+
+        # Conversely, the discussion collaboration will hold the
+        # discussion root in its generic foreign key
+        # this thread can now be accessed via the "course_discussion"
+        # model attribute
+        disc_collab.content_object = new_threaded_comment
+        disc_collab.save()
+
+        DiscussionIndex.update_class_references(
+            new_threaded_comment.comment, new_threaded_comment.user,
+            new_threaded_comment, new_threaded_comment.content_object,
+            new_threaded_comment.user)
+
+    @staticmethod
+    def visible_by_course(course, viewer):
         projects = Project.objects.filter(course=course)
 
         visible = []
@@ -181,7 +256,8 @@ class ProjectManager(models.Manager):
         visible.sort(reverse=True, key=lambda project: project.modified)
         return visible
 
-    def visible_by_course_and_user(self, course, viewer, user, is_faculty):
+    @staticmethod
+    def visible_by_course_and_user(course, viewer, user, is_faculty):
         """
             Retrieve all assignments, responses and projects authored or
             co-authored by the user.
@@ -346,7 +422,6 @@ class ProjectManager(models.Manager):
         projects.update(response_view_policy=RESPONSE_VIEW_NEVER[0])
 
 
-@python_2_unicode_compatible
 class Project(models.Model):
     """The Project model handles assignments and responses.
 

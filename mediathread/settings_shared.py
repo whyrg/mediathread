@@ -39,10 +39,6 @@ CACHES = {
 TEMPLATES[0]['OPTIONS']['context_processors'].append(  # noqa
     'mediathread.main.views.django_settings')
 
-# Prepend the CookiesSameSite middleware to the beginning of
-# MIDDLEWARE. It needs to be first to work correctly.
-MIDDLEWARE = ['django_cookies_samesite.middleware.CookiesSameSite'] + \
-    MIDDLEWARE  # noqa
 
 MIDDLEWARE += [  # noqa
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -50,6 +46,7 @@ MIDDLEWARE += [  # noqa
     'mediathread.main.middleware.MethCourseManagerMiddleware',
     'django_user_agents.middleware.UserAgentMiddleware',
 ]
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 
 TEMPLATES[0]['DIRS'].insert(0, os.path.join(base, "deploy_specific/templates"))  # noqa
@@ -83,7 +80,8 @@ INSTALLED_APPS += [  # noqa
 ]
 
 THUMBNAIL_SUBDIR = "thumbs"
-SERVER_EMAIL = "mediathread@example.com"
+SERVER_EMAIL = "mediathread-noreply@example.com"
+CONTACT_US_EMAIL = "mediathread-support@example.com"
 
 DATE_FORMAT = DATETIME_FORMAT = "g:i a, m/d/y"
 LOGOUT_REDIRECT_URL = LOGIN_REDIRECT_URL = '/'
@@ -174,8 +172,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_METHODS = ('GET',)
 CORS_ALLOW_CREDENTIALS = True
 
-DCS_SESSION_COOKIE_SAMESITE = 'None'
-
 
 def default_url_processor(url, label=None, request=None):
     return url
@@ -236,6 +232,11 @@ if 'test' in sys.argv or \
     CELERY_BROKER_URL = DEFAULT_TEST_CONFIG.get('broker_url')
     CELERY_RESULT_BACKEND = DEFAULT_TEST_CONFIG.get('result_backend')
     CELERY_BROKER_HEARTBEAT = DEFAULT_TEST_CONFIG.get('broker_heartbeat')
+else:
+    SESSION_COOKIE_SAMESITE = 'None'
+    DCS_SESSION_COOKIE_SAMESITE = 'None'
+
+CSRF_COOKIE_SAMESITE = 'None'
 
 BLOCKED_EMAIL_DOMAINS = []
 
@@ -246,3 +247,5 @@ SURELINK_URL = ''
 ASSET_URL_PROCESSOR = sligen_streaming_processor
 
 IMAGE_UPLOAD_AVAILABLE = False
+
+X_FRAME_OPTIONS = 'SAMEORIGIN'
