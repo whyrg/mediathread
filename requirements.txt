@@ -30,9 +30,9 @@ unicodecsv==0.14.1
 
 editdistance==0.6.0
 
-pylint==2.14.0
+pylint==2.15.5
 
-astroid==2.12.1
+astroid==2.12.12
 
 pyasn1==0.4.8
 ndg-httpsclient==0.5.1
@@ -41,7 +41,7 @@ chardet==5.0.0
 
 # https://urllib3.readthedocs.io/en/latest/user-guide.html#ssl-py2
 idna==3.4
-urllib3==1.26.7  # sentry-sdk
+urllib3==1.26.11  # sentry-sdk
 certifi==2022.9.14  # sentry-sdk
 cryptography==38.0.0
 pyOpenSSL==22.1.0
@@ -50,8 +50,8 @@ cffi==1.15.0  # for pyOpenSSL
 
 requests==2.28.1
 contextlib2==21.6.0
-rcssmin==1.0.6
-rjsmin==1.1.0
+rcssmin==1.1.0
+rjsmin==1.2.0
 
 djangowind==1.2.4
 django-tagging==0.5.0
