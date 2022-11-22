@@ -761,8 +761,12 @@ class PanoptoUploaderView(LoggedInCourseMixin, View):
         tmp.close()
 
         panopto_id = self.verify_upload_to_panopto(uploader.target.upload_id)
-        thub_url = self.pull_thumb_from_panopto(panopto_id)
+        if suffix == ".mp3":
+            thub_url = settings.STATIC_URL + "img/thumbs/mp3_thumbnail.png"
+        else:
+            thub_url = self.pull_thumb_from_panopto(panopto_id)
         self.create_panopto_asset(request, title, panopto_id, thub_url)
+
         logger.info('upload_to_panoto thread finished')
 
     def post(self, request, *args, **kwargs):
