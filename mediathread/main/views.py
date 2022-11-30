@@ -1236,7 +1236,7 @@ class LTICourseSelector(LoggedInMixin, View):
         messages.add_message(
             request, messages.INFO,
             'Reminder: please log out of Mediathread '
-            'after you log out of Courseworks.')
+            'after you log out of Canvas.')
 
         url = '/'
         try:
