@@ -352,10 +352,6 @@ class AssetCreateView(LoggedInCourseMixin, View):
     def dispatch(self, request, *args, **kwargs):
         r = super().dispatch(request, *args, **kwargs)
 
-        # @todo - update for pdf permissions when that's ready to go
-        if not course_details.can_upload_image(request.user, request.course):
-            raise PermissionDenied
-
         return r
 
     def post(self, request, *args, **kwargs):
