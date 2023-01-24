@@ -178,7 +178,7 @@ export default class GridAsset extends React.Component {
                     </a>
                 </h5>
                 <div key={this.props.asset.id}>
-                    <div className="card-thumbnail" aria-live="polite">
+                    <div className="card-thumbnail">
                         <div className="media-type">
                             <span className="badge badge-light">
                                 {displayedType}
@@ -202,7 +202,7 @@ export default class GridAsset extends React.Component {
                                     <img
                                         className="mx-auto d-block img-fluid"
                                         style={{'maxWidth': '100%'}}
-                                        alt={'Video thumbnail for ' + label}
+                                        alt={'Play video, ' + label}
                                         src={this.state.thumbnailUrl}
                                         id={`video-${this.props.asset.id}`}
                                         onError={() => handleBrokenImage(type)} />
@@ -211,7 +211,7 @@ export default class GridAsset extends React.Component {
                                     <img
                                         className="mx-auto d-block img-fluid"
                                         style={{'maxWidth': '100%'}}
-                                        alt={'Audio thumbnail for ' + label}
+                                        alt={'Play audio, ' + label}
                                         src={this.state.thumbnailUrl}
                                         id={`audio-${this.props.asset.id}`}
                                         onError={() => handleBrokenImage(type)} />
