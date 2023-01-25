@@ -49,11 +49,11 @@
 
                     {% endif %}
                 </td>
-                <td>
+                <th scope="row">
                     <a href="{% url 'project-workspace' request.course.id object.id %}" title="{{object.title}}">
                         {{object.title}}
                     </a>
-                </td>
+                </th>
                 <td class="text-center">
                     {{response_count}} / {{request.course.students|length}}
                 </td>

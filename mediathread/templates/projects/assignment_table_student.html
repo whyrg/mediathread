@@ -237,9 +237,9 @@
                         <td class="text-right">
                             <div class="badge badge-danger">No Response</div>
                         </td>
-                        <td>
+                        <th scope="row">
                             {{object.title}}
-                        </td>
+                        </th>
                         <td>
                             {% if object.is_discussion_assignment %}
                                 <a href="{% url 'project-workspace' request.course.id object.id %}">
