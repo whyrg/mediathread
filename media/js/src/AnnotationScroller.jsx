@@ -55,6 +55,7 @@ export default class AnnotationScroller extends React.Component {
             e, this.props.asset);
         const plural = this.props.asset.annotations.length === 1 ? '' : 's';
         let activeTitle = `${this.props.asset.annotations.length} selection${plural}`;
+        let selectionAriaLabel = this.props.asset.title + ': ' + activeTitle;
         if (selectedAnnotation) {
             activeLink = `${courseUrl}react/asset/` +
                   selectedAnnotation.asset_id +
@@ -92,7 +93,8 @@ export default class AnnotationScroller extends React.Component {
                         <a
                             onClick={onLinkClick}
                             className="page-link"
-                            href={activeLink}>
+                            href={activeLink}
+                            aria-label={selectionAriaLabel}>
                             {activeTitle}
                         </a>
                     </li>
