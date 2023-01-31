@@ -232,8 +232,10 @@ export default class CollectionTab extends React.Component {
                 // Put the assets in card-groups, three at a time.
                 if (assetGroup.length >= 3) {
                     assets.push(
-                        <div key={idx} className="card-group">
+                      <div role="rowgroup">
+                          <div key={idx} role="row" className="card-group">
                             {assetGroup}
+                          </div>
                         </div>
                     );
                     assetGroup = [];
@@ -248,8 +250,10 @@ export default class CollectionTab extends React.Component {
 
             if (assetGroup.length > 0) {
                 assets.push(
-                    <div key={assetGroup[0].key} className="card-group">
+                    <div role="rowgroup">
+                      <div key={assetGroup[0].key} role="row" className="card-group">
                         {assetGroup}
+                      </div>
                     </div>
                 );
             }
@@ -357,7 +361,7 @@ export default class CollectionTab extends React.Component {
                     </>
                 )}
 
-                <div className="assets">
+                <div role="table" className="assets">
                     {assetsDom}
                 </div>
 
