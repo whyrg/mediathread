@@ -7,7 +7,7 @@ export default class GridListSwitcher extends React.Component {
         return (
             <div className="col-md-6">
                 <div
-                    id={`view-toggle=${uniqueId}`} className="btn-group"
+                    id={`view-toggle_${uniqueId}`} className="btn-group"
                     role="group" aria-label="View Toggle">
                     <button
                         type="button"
