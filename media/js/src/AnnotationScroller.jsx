@@ -89,7 +89,7 @@ export default class AnnotationScroller extends React.Component {
                         </a>
                     </li>
 
-                    <li className="page-item w-100 text-center text-nowrap text-truncate">
+                    <li className="page-item w-100 text-center text-nowrap text-truncate" style="overflow: unset;">
                         <a
                             onClick={onLinkClick}
                             className="page-link"
