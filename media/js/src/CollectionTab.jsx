@@ -231,6 +231,7 @@ export default class CollectionTab extends React.Component {
             assetsDom = (
                 <AssetDetail
                     asset={this.state.selectedAsset}
+                    maxDuration={this.state.duration}
                     tags={this.props.tags}
                     terms={this.props.terms}
                     leaveAssetDetailView={this.leaveAssetDetailView}
