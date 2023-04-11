@@ -13,7 +13,7 @@ RUN /ve/bin/pip install --no-index -f /wheelhouse -r /wheelhouse/requirements.tx
 && rm -rf /wheelhouse
 WORKDIR /app
 COPY . /app/
-COPY --from node /app/media/js/bundle.js /app/media/js/bundle.js
+COPY --from=node /app/media/js/bundle.js /app/media/js/bundle.js
 #RUN /ve/bin/python manage.py test
 EXPOSE 8000
 ADD docker-run.sh /run.sh
