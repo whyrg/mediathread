@@ -1,3 +1,9 @@
+FROM node:19-alpine3.16 as node
+WORKDIR /app
+COPY . /app/
+RUN npm run build 
+
+
 FROM ccnmtl/django.base
 RUN apt-get update \
  && apt-get install python3-urllib3 -y
@@ -7,6 +13,7 @@ RUN /ve/bin/pip install --no-index -f /wheelhouse -r /wheelhouse/requirements.tx
 && rm -rf /wheelhouse
 WORKDIR /app
 COPY . /app/
+COPY --from node /app/media/js/bundle.js /app/media/js/bundle.js
 #RUN /ve/bin/python manage.py test
 EXPOSE 8000
 ADD docker-run.sh /run.sh
