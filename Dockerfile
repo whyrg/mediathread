@@ -1,7 +1,7 @@
-FROM node:19-alpine3.16 as node
+FROM node:16-alpine3.16 as node
 WORKDIR /app
 COPY . /app/
-RUN npm run build 
+RUN rm -rf node_modules; npm install; npm run build 
 
 
 FROM ccnmtl/django.base
